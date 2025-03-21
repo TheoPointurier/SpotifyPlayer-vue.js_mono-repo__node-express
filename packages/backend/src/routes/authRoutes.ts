@@ -1,9 +1,13 @@
+// src/routes/authRoutes.ts
 import { Router } from 'express';
-import { login, callback } from '../controllers/authController.js';
+import { login, callback, getToken, refresh, logout } from '../controllers/authController.js';
 
-const router = Router();
+const authRouter = Router();
 
-router.get('/login', login);
-router.get('/callback', callback);
+authRouter.get('/login', login);
+authRouter.get('/callback', callback);
+authRouter.get('/get-token', getToken);
+authRouter.post('/refresh', refresh);
+authRouter.get('/logout', logout);
 
-export default router;
+export default authRouter;

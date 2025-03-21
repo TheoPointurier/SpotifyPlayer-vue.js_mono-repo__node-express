@@ -1,8 +1,10 @@
+// src/routes/spotifyRoutes.ts
 import { Router } from 'express';
-import { getCurrentTrack } from '../controllers/spotifyController.js';
+import { getCurrentTrack, test } from '../controllers/spotifyController.js';
 
-const router = Router();
+const spotifyRouter = Router();
 
-router.get('/current-track', getCurrentTrack);
+spotifyRouter.get('/current-track', getCurrentTrack);
+spotifyRouter.get('/test', test);
 
-export default router;
+export default spotifyRouter ;
