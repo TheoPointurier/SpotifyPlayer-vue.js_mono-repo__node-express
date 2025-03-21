@@ -1,13 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Un beau player avec l'api de spotify",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node dist/index.js",
     "dev": "tsc --watch & node --watch dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
