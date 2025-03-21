@@ -7,30 +7,34 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { getCurrentTrack } from '../services/spotifyService';
+import type { SpotifyTrack } from '../../types/spotify';
 
 export default defineComponent({
   name: 'SpotifyPlayer',
-  data() {
-    return {
-      track: null as any,
-      token: '' as string,
-    };
+  props: {
+    token: {
+      type: String,
+      required: true,
+    },
   },
-  mounted() {
-    const urlParams = new URLSearchParams(window.location.search);
-    this.token = urlParams.get('access_token') || '';
-    if (this.token) this.fetchTrack();
-  },
-  methods: {
-    async fetchTrack() {
+  setup(props) {
+    const track = ref<SpotifyTrack | null>(null);
+
+    const fetchTrack = async () => {
       try {
-        this.track = await getCurrentTrack(this.token);
+        track.value = await getCurrentTrack(props.token);
       } catch (error) {
         console.error('Error fetching track:', error);
+        track.value = null;
       }
-    },
+    };
+
+    return {
+      track,
+      fetchTrack,
+    };
   },
 });
 </script>

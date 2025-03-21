@@ -4,33 +4,53 @@
     <button @click="testBackend">Tester le backend</button>
     <p>{{ message }}</p>
     <button @click="loginSpotify" v-if="!accessToken">Connexion Spotify</button>
+    <button @click="logout" v-if="accessToken">Déconnexion</button>
     <button @click="getProfile" v-if="accessToken">Récupérer profil</button>
     <p v-if="profile">Bonjour, {{ profile.display_name }}</p>
+
+    <SpotifyPlayer v-if="accessToken" :token="accessToken" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
+import SpotifyPlayer from './components/SpotifyPlayer.vue';
+import { getCurrentTrack } from './services/spotifyService';
+import type { SpotifyTrack, SpotifyProfile } from '../types/spotify.ts';
 
 export default defineComponent({
   name: 'App',
+  components: {
+    SpotifyPlayer,
+  },
   setup() {
     const message = ref('');
     const accessToken = ref<string | null>(null);
-    const profile = ref<any>(null);
+    const profile = ref<SpotifyProfile | null>(null);
+    const track = ref<SpotifyTrack | null>(null);
+    const APIURL = import.meta.env.VITE_BASE_URL;
 
-    // Vérifie si un code est présent dans l'URL après redirection
-    onMounted(() => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      if (code) {
-        fetchToken(code);
-        window.history.replaceState({}, document.title, '/'); // Nettoie l'URL
+    const fetchToken = async () => {
+      try {
+        const response = await fetch(`${APIURL}/auth/get-token`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          accessToken.value = data.access_token;
+        } else {
+          accessToken.value = null;
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du token', error);
+        accessToken.value = null;
       }
-    });
+    };
+
+    onMounted(fetchToken);
 
     const testBackend = async () => {
-      const response = await fetch('http://localhost:5000/api/test');
+      const response = await fetch(`${APIURL}/api/test`);
       const data = await response.json();
       message.value = data.message;
     };
@@ -39,13 +59,18 @@ export default defineComponent({
       window.location.href = 'http://localhost:5000/auth/login';
     };
 
-    const fetchToken = async (code: string) => {
+    const logout = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/auth/callback?code=${code}`);
-        const data = await response.json();
-        accessToken.value = data.access_token;
+        const response = await fetch(`${APIURL}/auth/logout`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          accessToken.value = null;
+          profile.value = null;
+          track.value = null;
+        }
       } catch (error) {
-        console.error('Erreur lors de la récupération du token', error);
+        console.error('Erreur lors de la déconnexion', error);
       }
     };
 
@@ -67,7 +92,27 @@ export default defineComponent({
       }
     };
 
-    return { message, accessToken, profile, testBackend, loginSpotify, getProfile };
+    const fetchTrack = async () => {
+      if (!accessToken.value) return;
+      try {
+        const data = await getCurrentTrack(accessToken.value);
+        track.value = data;
+      } catch (error) {
+        console.error('Error fetching track:', error);
+      }
+    };
+
+    return {
+      message,
+      accessToken,
+      profile,
+      track,
+      testBackend,
+      loginSpotify,
+      logout,
+      getProfile,
+      fetchTrack,
+    };
   },
 });
 </script>
