@@ -54,6 +54,9 @@ importers:
       '@types/spotify-web-api-node':
         specifier: ^5.0.11
         version: 5.0.11
+      '@types/spotify-web-playback-sdk':
+        specifier: ^0.1.19
+        version: 0.1.19
       concurrently:
         specifier: ^9.1.2
         version: 9.1.2
@@ -70,6 +73,9 @@ importers:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.7.3)
     devDependencies:
+      '@types/node':
+        specifier: ^22.13.11
+        version: 22.13.11
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
         version: 5.2.3(vite@6.2.2(@types/node@22.13.11))(vue@3.5.13(typescript@5.7.3))
@@ -481,6 +487,9 @@ packages:
 
   '@types/spotify-web-api-node@5.0.11':
     resolution: {integrity: sha512-RS3IkSqH9geC61e8qd+Oy7giOTtiY7ywm0Z4bu5uYuc7XuOcLfDwKjmle85IbpTEdazeCgmIbo8nMLg7WDVvgw==}
+
+  '@types/spotify-web-playback-sdk@0.1.19':
+    resolution: {integrity: sha512-Is7x9gMIMoERxE0uvb2SPFQoy5OR7nO1B24CJiaDAUIdq195OLTQedN95XJQtxB2mfm+zi2j3LvEtpPdHKnB3w==}
 
   '@vitejs/plugin-vue@5.2.3':
     resolution: {integrity: sha512-IYSLEQj4LgZZuoVpdSUCw3dIynTWQgPlaRP6iAvMle4My0HdYwr5g5wQAfwOeHQBmYwEkqF70nRpSilr6PoUDg==}
@@ -1462,6 +1471,8 @@ snapshots:
   '@types/spotify-web-api-node@5.0.11':
     dependencies:
       '@types/spotify-api': 0.0.25
+
+  '@types/spotify-web-playback-sdk@0.1.19': {}
 
   '@vitejs/plugin-vue@5.2.3(vite@6.2.2(@types/node@22.13.11))(vue@3.5.13(typescript@5.7.3))':
     dependencies:
