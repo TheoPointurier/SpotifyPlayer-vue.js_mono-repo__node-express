@@ -1,7 +1,7 @@
 // src/controllers/spotifyController.ts
 import type { Request, Response } from 'express';
 
-export const getCurrentTrack = async (req: Request, res: Response) => {
+export async function getCurrentTrack(req: Request, res: Response) {
   const accessToken = req.session?.accessToken || req.cookies.access_token;
   if (!accessToken) {
     res.status(401).json({ error: 'Non Authentifié' });
@@ -27,6 +27,6 @@ export const getCurrentTrack = async (req: Request, res: Response) => {
   }
 };
 
-export const test = (req: Request, res: Response) => {
+export function test(req: Request, res: Response) {
   res.json({ message: 'Backend fonctionne !' });
 };

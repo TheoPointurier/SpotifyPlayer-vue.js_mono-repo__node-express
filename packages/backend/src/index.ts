@@ -38,7 +38,7 @@ app.use(
 
 // Routes
 app.use('/api', spotifyRouter);
-app.use('/auth', authRouter );
+app.use('/auth', authRouter);
 
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);

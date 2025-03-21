@@ -3,10 +3,10 @@ import type { Request, Response } from 'express';
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-export const login = (
+export function login(
   req: Request,
   res: Response<{ error: string }>,
-) => {
+) {
   if (req.session?.accessToken) {
     return res.redirect(FRONTEND_URL);
   }
@@ -16,11 +16,11 @@ export const login = (
   res.redirect(authUrl);
 };
 
-export const callback = async (
+export async function callback(
   // biome-ignore lint/complexity/noBannedTypes: <explanation>
   req: Request<{}, {}, {}, { code: string }>,
   res: Response<{ error: string }>,
-) => {
+) {
   const code = req.query.code as string;
   try {
     const response = await fetch('https://accounts.spotify.com/api/token', {
@@ -59,10 +59,10 @@ export const callback = async (
   }
 };
 
-export const getToken = (
+export function getToken(
   req: Request,
   res: Response<{ access_token: string } | { error: string }>,
-) => {
+) {
   console.log('getToken');
   const accessToken = req.session?.accessToken || req.cookies.access_token;
   if (!accessToken) {
@@ -72,11 +72,11 @@ export const getToken = (
   res.json({ access_token: accessToken });
 };
 
-export const refresh = async (
+export async function refresh(
   // biome-ignore lint/complexity/noBannedTypes: <explanation>
   req: Request<{}, {}, { refresh_token: string }>,
   res: Response<{ access_token: string; expires_in: number } | { error: string }>,
-) => {
+) {
   const refreshToken = req.session?.refreshToken || req.body.refresh_token;
   if (!refreshToken) {
     res.status(400).json({ error: 'Refresh token manquant' });
@@ -117,10 +117,10 @@ export const refresh = async (
   }
 };
 
-export const logout = (
+export function logout (
   req: Request,
   res: Response<{ message: string } | { error: string }>,
-) => {
+) {
   res.cookie('access_token', '', { expires: new Date(0) });
   req.session?.destroy((err: Error | null) => {
     if (err) {
