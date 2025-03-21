@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
 import spotifyApi from '../config/spotifyConfig.js';
+import crypto from 'crypto';
 
 export const login = (req: Request, res: Response) => {
   const scopes = ['user-read-private', 'user-read-email', 'user-read-playback-state'];
-  const authorizeURL = spotifyApi.createAuthorizeURL(scopes, 'state');
+  // add crypto to uniq id for state & fight against CSRF attacks
+  const state = crypto.randomBytes(16).toString('hex');
+  const authorizeURL = spotifyApi.createAuthorizeURL(scopes, state);
   res.redirect(authorizeURL);
 };
 
