@@ -56,7 +56,7 @@ export default defineComponent({
     };
 
     const loginSpotify = () => {
-      window.location.href = 'http://localhost:5000/auth/login';
+      window.location.href = `${APIURL}/auth/login`;
     };
 
     const logout = async () => {
