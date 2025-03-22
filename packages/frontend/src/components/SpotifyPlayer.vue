@@ -1,19 +1,36 @@
 <!-- src/components/SpotifyPlayer.vue -->
 <template>
-  <div>
+  <div class="player card">
     <h2>Now Playing</h2>
-    <div v-if="track">
-      <p>{{ track.name }} - {{ track.artists[0].name }}</p>
-      <img :src="track.album.images[0]?.url" alt="Album cover" width="200" />
-      <p>Progress: {{ Math.floor(progress / 1000) }} / {{ Math.floor(track.duration_ms / 1000) }} seconds</p>
-      <div>
-        <button @click="previousTrack">Précédent</button>
-        <button @click="togglePlayPause">{{ isPlaying ? 'Pause' : 'Play' }}</button>
-        <button @click="nextTrack">Suivant</button>
-        <button @click="toggleShuffle">{{ isShuffling ? 'Désactiver Shuffle' : 'Activer Shuffle' }}</button>
+    <div v-if="track" class="track-info">
+      <img :src="track.album.images[0]?.url" alt="Album cover" class="album-cover" />
+      <div class="track-details">
+        <p class="track-name">{{ track.name }}</p>
+        <p class="artist-name">{{ track.artists[0].name }}</p>
+        <div class="progress-container">
+          <span class="progress-time">{{ Math.floor(progress / 1000) }}</span>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: `${(progress / track.duration_ms) * 100}%` }"></div>
+          </div>
+          <span class="progress-time">{{ Math.floor(track.duration_ms / 1000) }}</span>
+        </div>
       </div>
     </div>
-    <p v-else>No track playing</p>
+    <p v-else class="no-track">No track playing</p>
+    <div class="controls">
+      <button class="control-button" @click="previousTrack" title="Previous">
+        <i class="fas fa-backward"></i>
+      </button>
+      <button class="control-button play-pause" @click="togglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
+        <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+      </button>
+      <button class="control-button" @click="nextTrack" title="Next">
+        <i class="fas fa-forward"></i>
+      </button>
+      <button class="control-button" @click="toggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
+        <i class="fas fa-shuffle"></i>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -167,7 +184,7 @@ export default defineComponent({
       }
 
       try {
-        // Vérifier l’appareil actif actuel
+        // Verify if the device is already active
         const response = await fetch('https://api.spotify.com/v1/me/player', {
           headers: {
             Authorization: `Bearer ${props.token}`,
@@ -182,7 +199,7 @@ export default defineComponent({
           }
         }
 
-        // Si l’appareil n’est pas actif, transférer la lecture
+        // If not, transfer the playback to our device
         console.log('Transfert de la lecture vers notre appareil...');
         const transferResponse = await fetch('https://api.spotify.com/v1/me/player', {
           method: 'PUT',
@@ -192,7 +209,7 @@ export default defineComponent({
           },
           body: JSON.stringify({
             device_ids: [deviceId.value],
-            play: false, // Ne pas lancer la lecture automatiquement
+            play: false,
           }),
         });
 
@@ -333,3 +350,110 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+.player {
+  grid-column: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  max-height: 300px;
+}
+
+.track-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.album-cover {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.track-details {
+  flex: 1;
+}
+
+.track-name {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.artist-name {
+  font-size: 14px;
+  color: var(--spotify-light-grey);
+  margin-bottom: 8px;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-time {
+  font-size: 12px;
+  color: var(--spotify-light-grey);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  background-color: var(--spotify-light-grey);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--spotify-green);
+  transition: width 0.1s linear;
+}
+
+.no-track {
+  font-size: 16px;
+  color: var(--spotify-light-grey);
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+}
+
+.control-button {
+  background-color: transparent;
+  border: none;
+  color: var(--spotify-white);
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.control-button:hover {
+  color: var(--spotify-green);
+}
+
+.control-button.active {
+  color: var(--spotify-green);
+}
+
+.play-pause {
+  background-color: var(--spotify-green);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-pause:hover {
+  background-color: #1ed760;
+}
+</style>

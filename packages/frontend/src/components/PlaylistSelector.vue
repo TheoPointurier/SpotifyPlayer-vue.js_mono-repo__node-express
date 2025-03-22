@@ -1,24 +1,32 @@
 <!-- src/components/PlaylistSelector.vue -->
 <template>
-  <div>
+  <div class="playlist-selector">
     <h2>Mes Playlists</h2>
-    <ul>
-      <li v-for="playlist in playlists" :key="playlist.id">
-        <button @click="selectPlaylist(playlist)">
-          {{ playlist.name }}
-        </button>
-      </li>
-    </ul>
-
-    <div v-if="selectedPlaylist">
-      <h3>{{ selectedPlaylist.name }}</h3>
-      <ul>
-        <li v-for="item in tracks" :key="item.track.id">
-          {{ item.track.name }} - {{ item.track.artists[0].name }}
-          <button @click="handlePlayTrack(item.track.uri)" :disabled="!isPlayerReady">Play</button>
+    <section class="playlists-section">
+      <ul class="playlist-list">
+        <li v-for="playlist in playlists" :key="playlist.id" class="playlist-item card">
+          <button class="playlist-button" @click="selectPlaylist(playlist)">
+            {{ playlist.name }}
+          </button>
         </li>
       </ul>
-    </div>
+
+      <div v-if="selectedPlaylist" class="tracks-section">
+        <h3>{{ selectedPlaylist.name }}</h3>
+        <ul class="track-list">
+          <li v-for="item in tracks" :key="item.track.id" class="track-item card">
+            <div class="track-info">
+              <span class="track-name">{{ item.track.name }}</span>
+              <span class="artist-name">{{ item.track.artists[0].name }}</span>
+            </div>
+            <button class="button-primary play-button" @click="handlePlayTrack(item.track.uri)"
+              :disabled="!isPlayerReady">
+              Play
+            </button>
+          </li>
+        </ul>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -132,3 +140,72 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+.playlist-selector {
+  grid-column: 3 / 4;
+  max-height: 100%;
+  overflow-y: scroll;
+  width: 42rem;
+}
+
+.playlist-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.playlists-section {
+  display: flex;
+}
+
+.playlist-item {
+  padding: 12px;
+}
+
+.playlist-button {
+  background: none;
+  border: none;
+  color: var(--spotify-white);
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+
+.tracks-section {
+  margin-top: 24px;
+}
+
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.track-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+}
+
+.track-info {
+  flex: 1;
+}
+
+.track-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.artist-name {
+  font-size: 14px;
+  color: var(--spotify-light-grey);
+}
+
+.play-button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+</style>
