@@ -35,6 +35,7 @@ export const getUserPlaylists = async (token: string): Promise<SpotifyPlaylist[]
   }
 
   const data = await response.json();
+  console.log("data", data);
   return data.items;
 };
 
