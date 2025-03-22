@@ -15,12 +15,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import SpotifyPlayer from './components/SpotifyPlayer.vue';
 import PlaylistSelector from './components/PlaylistSelector.vue';
 import { fetchToken, logout, getProfile } from './services/authService';
 import { login } from './services/spotifyService';
-import { initializeSpotifyPlayer, cleanupSpotifyPlayer } from './services/spotifyPlayerSetup';
 
 export default defineComponent({
   name: 'App',
@@ -36,18 +35,9 @@ export default defineComponent({
 
     const fetchTokenOnMount = async () => {
       accessToken.value = await fetchToken();
-      if (accessToken.value) {
-        // Initialiser le SDK une fois que le token est disponible
-        initializeSpotifyPlayer(accessToken.value);
-      }
     };
 
     onMounted(fetchTokenOnMount);
-
-    onUnmounted(() => {
-      // Nettoyer le lecteur lors de la destruction de l’app
-      cleanupSpotifyPlayer();
-    });
 
     const testBackend = async () => {
       const response = await fetch(`${APIURL}/api/test`);
@@ -63,7 +53,6 @@ export default defineComponent({
       await logout();
       accessToken.value = null;
       profile.value = null;
-      cleanupSpotifyPlayer(); // Nettoyer le lecteur lors de la déconnexion
     };
 
     const fetchProfile = async () => {

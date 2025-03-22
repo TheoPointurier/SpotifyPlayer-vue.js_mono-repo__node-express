@@ -57,7 +57,9 @@ export default defineComponent({
         // Vider la file d'attente actuelle
         clearQueue();
         // Ajouter les pistes de la playlist à la file d'attente
-        tracks.value.forEach((track) => addToQueue(track.track.uri));
+        for (const track of tracks.value) {
+          addToQueue(track.track.uri);
+        }
       } catch (error) {
         console.error('Error fetching playlist tracks:', error);
       }
@@ -67,13 +69,13 @@ export default defineComponent({
       console.log('Attempting to play track:', trackUri);
       console.log('isPlayerReady:', isPlayerReady.value);
       console.log('deviceId:', deviceId.value);
+      console.log('Queue actuelle:', queue.value); // Ajouter ce log
 
       try {
-        // Attendre que le lecteur soit prêt
         if (!isPlayerReady.value || !deviceId.value || !player.value) {
           console.log('Le lecteur n’est pas prêt. Attente...');
           let attempts = 0;
-          const maxAttempts = 10; // Attendre jusqu'à 5 secondes (10 * 500ms)
+          const maxAttempts = 10;
           while (!isPlayerReady.value && attempts < maxAttempts) {
             await new Promise((resolve) => setTimeout(resolve, 500));
             attempts++;
@@ -85,36 +87,9 @@ export default defineComponent({
           }
         }
 
-        // Ajouter la piste à la file d'attente
         addToQueue(trackUri);
-
-        // Définir la piste en cours
         setCurrentTrackUri(trackUri);
 
-        // const checkDevice = async () => {
-        //   const response = await fetch('https://api.spotify.com/v1/me/player', {
-        //     headers: {
-        //       Authorization: `Bearer ${props.token}`,
-        //     },
-        //   });
-        //   if (response.ok) {
-        //     const data = await response.json();
-        //     if (data.device && data.device.id === deviceId.value) {
-        //       console.log('Appareil actif et prêt !');
-        //       return true;
-        //     }
-        //   }
-        //   console.log('Appareil non prêt ou non actif. FALSE');
-        //   return false;
-        // };
-
-        // // Dans handlePlayTrack, avant l'appel à /me/player/play :
-        // const isDeviceReady = await checkDevice();
-        // if (!isDeviceReady) {
-        //   throw new Error('L’appareil n’est pas prêt. Veuillez réessayer.');
-        // }
-
-        // Définir le contexte de lecture avec l'API
         const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId.value}`, {
           method: 'PUT',
           headers: {
@@ -122,7 +97,8 @@ export default defineComponent({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            uris: [trackUri], // Jouer la piste spécifique
+            uris: queue.value,
+            offset: { uri: trackUri },
           }),
         });
 
@@ -130,10 +106,8 @@ export default defineComponent({
           throw new Error(`Erreur lors de la définition du contexte de lecture: ${response.statusText}`);
         }
 
-        // Marquer le contexte comme initialisé
         hasInitializedContext.value = true;
 
-        // Lancer la lecture via le SDK
         await player.value.resume().then(() => {
           console.log('Lecture reprise avec succès via le SDK !');
         });
@@ -143,6 +117,7 @@ export default defineComponent({
         alert('Erreur lors de la lecture de la piste. Veuillez réessayer.');
       }
     };
+
 
     onMounted(fetchPlaylists);
 

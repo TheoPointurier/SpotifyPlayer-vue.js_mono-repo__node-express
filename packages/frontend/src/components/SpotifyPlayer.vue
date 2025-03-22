@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
-import { player, isPlayerReady } from '../services/spotifyPlayerSetup';
+import { player, isPlayerReady, deviceId } from '../services/spotifyPlayerSetup';
 import { queue, currentTrackUri, setCurrentTrackUri } from '../services/playbackState';
 
 export default defineComponent({
@@ -30,16 +30,68 @@ export default defineComponent({
       required: true,
     },
   },
-  setup() {
+  setup(props) {
     const track = ref<Spotify.PlaybackState['track_window']['current_track'] | null>(null);
     const progress = ref<number>(0);
     const isPlaying = ref<boolean>(false);
     const isShuffling = ref<boolean>(false);
     let progressInterval: NodeJS.Timeout | null = null;
 
-    // Écouter les changements d’état du lecteur
-    const setupPlayerListeners = () => {
-      if (!player.value) return;
+    // Charger le SDK dynamiquement
+    const loadSpotifySDK = () => {
+      return new Promise<void>((resolve, reject) => {
+        // Vérifier si le SDK est déjà chargé
+        if (window.Spotify) {
+          resolve();
+          return;
+        }
+
+        // Créer une balise script pour charger le SDK
+        const script = document.createElement('script');
+        script.src = 'https://sdk.scdn.co/spotify-player.js';
+        script.async = true;
+
+        // Définir la fonction onSpotifyWebPlaybackSDKReady
+        window.onSpotifyWebPlaybackSDKReady = () => {
+          console.log('Spotify Web Playback SDK is ready!');
+          resolve();
+        };
+
+        script.onerror = () => {
+          console.error('Erreur lors du chargement du Spotify SDK');
+          reject(new Error('Erreur lors du chargement du Spotify SDK'));
+        };
+
+        document.head.appendChild(script);
+      });
+    };
+
+    // Initialiser le player Spotify
+    const initializePlayer = () => {
+      if (!window.Spotify || !props.token) {
+        console.log('Spotify SDK ou token manquant');
+        return;
+      }
+
+      player.value = new window.Spotify.Player({
+        name: 'Vue Spotify Player',
+        getOAuthToken: (cb: (token: string) => void) => {
+          cb(props.token);
+        },
+        volume: 0.5,
+      });
+
+      // Ajouter les listeners
+      player.value.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+        deviceId.value = device_id;
+        isPlayerReady.value = true;
+      });
+
+      player.value.addListener('not_ready', ({ device_id }) => {
+        console.log('Device ID has gone offline', device_id);
+        isPlayerReady.value = false;
+      });
 
       player.value.addListener('player_state_changed', (state) => {
         if (!state) return;
@@ -49,7 +101,6 @@ export default defineComponent({
         isPlaying.value = !state.paused;
         isShuffling.value = state.shuffle;
 
-        // Mettre à jour la piste en cours
         if (track.value && track.value.uri !== currentTrackUri.value) {
           setCurrentTrackUri(track.value.uri);
         }
@@ -63,10 +114,35 @@ export default defineComponent({
         }
       });
 
-      // player.value.addListener('playback_error', ({ message }) => {
-      //   console.error('Erreur de lecture:', message);
-      // });
+      // Connecter le player
+      player.value.connect().then((success: boolean) => {
+        if (success) {
+          console.log('Player connecté avec succès !');
+        } else {
+          console.error('Échec de la connexion du player');
+        }
+      });
     };
+
+    // Charger et initialiser le SDK au montage du composant
+    onMounted(async () => {
+      try {
+        await loadSpotifySDK();
+        initializePlayer();
+      } catch (error) {
+        console.error('Erreur lors de l’initialisation du Spotify SDK:', error);
+      }
+    });
+
+    // Nettoyer lors de la destruction du composant
+    onUnmounted(() => {
+      stopProgress();
+      if (player.value) {
+        player.value.disconnect();
+        player.value = null;
+        isPlayerReady.value = false;
+      }
+    });
 
     // Basculer entre lecture et pause
     const togglePlayPause = async () => {
@@ -84,13 +160,71 @@ export default defineComponent({
       }
     };
 
+    const ensureDeviceActive = async () => {
+      if (!deviceId.value || !props.token) {
+        console.error('Device ID ou token non disponible');
+        return false;
+      }
+
+      try {
+        // Vérifier l’appareil actif actuel
+        const response = await fetch('https://api.spotify.com/v1/me/player', {
+          headers: {
+            Authorization: `Bearer ${props.token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.device && data.device.id === deviceId.value) {
+            console.log('Appareil déjà actif !');
+            return true;
+          }
+        }
+
+        // Si l’appareil n’est pas actif, transférer la lecture
+        console.log('Transfert de la lecture vers notre appareil...');
+        const transferResponse = await fetch('https://api.spotify.com/v1/me/player', {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${props.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            device_ids: [deviceId.value],
+            play: false, // Ne pas lancer la lecture automatiquement
+          }),
+        });
+
+        if (!transferResponse.ok) {
+          console.error('Erreur lors du transfert de la lecture:', transferResponse.statusText);
+          return false;
+        }
+
+        console.log('Lecture transférée avec succès vers notre appareil !');
+        return true;
+      } catch (error) {
+        console.error('Erreur lors de la vérification/transfert de l’appareil:', error);
+        return false;
+      }
+    };
+
     // Passer à la piste suivante
     const nextTrack = async () => {
-      if (!player.value) return;
+      if (!player.value) {
+        console.error('Player non initialisé');
+        return;
+      }
+
+      const isDeviceActive = await ensureDeviceActive();
+      if (!isDeviceActive) {
+        console.error('Impossible d’exécuter la commande : appareil non actif');
+        return;
+      }
+
       try {
         await player.value.nextTrack();
         console.log('Piste suivante');
-        // Mettre à jour la piste en cours
         const currentIndex = queue.value.indexOf(currentTrackUri.value || '');
         if (currentIndex !== -1 && currentIndex < queue.value.length - 1) {
           setCurrentTrackUri(queue.value[currentIndex + 1]);
@@ -102,11 +236,20 @@ export default defineComponent({
 
     // Revenir à la piste précédente
     const previousTrack = async () => {
-      if (!player.value) return;
+      if (!player.value) {
+        console.error('Player non initialisé');
+        return;
+      }
+
+      const isDeviceActive = await ensureDeviceActive();
+      if (!isDeviceActive) {
+        console.error('Impossible d’exécuter la commande : appareil non actif');
+        return;
+      }
+
       try {
         await player.value.previousTrack();
         console.log('Piste précédente');
-        // Mettre à jour la piste en cours
         const currentIndex = queue.value.indexOf(currentTrackUri.value || '');
         if (currentIndex !== -1 && currentIndex > 0) {
           setCurrentTrackUri(queue.value[currentIndex - 1]);
@@ -117,11 +260,41 @@ export default defineComponent({
     };
 
     // Activer/désactiver le mode shuffle
+    // Dans SpotifyPlayer.vue
     const toggleShuffle = async () => {
-      if (!player.value) return;
+      if (!player.value) {
+        console.error('Player non initialisé');
+        return;
+      }
+
+      const isDeviceActive = await ensureDeviceActive();
+      if (!isDeviceActive) {
+        console.error('Impossible d’exécuter la commande : appareil non actif');
+        return;
+      }
+
       try {
-        await player.value.toggleShuffle(!isShuffling.value);
-        console.log(isShuffling.value ? 'Shuffle désactivé' : 'Shuffle activé');
+        // Utiliser l’API Spotify pour activer/désactiver le shuffle
+        const newShuffleState = !isShuffling.value;
+        const response = await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=${newShuffleState}&device_id=${deviceId.value}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${props.token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erreur lors de la gestion du shuffle: ${response.statusText}`);
+        }
+
+        console.log(newShuffleState ? 'Shuffle activé via API' : 'Shuffle désactivé via API');
+
+        // Mettre à jour l’état local (l’événement player_state_changed devrait aussi le faire)
+        isShuffling.value = newShuffleState;
+
+        // Optionnel : Appeler toggleShuffle du SDK pour synchroniser
+        // await player.value.toggleShuffle(newShuffleState);
       } catch (error) {
         console.error('Erreur lors de la gestion du shuffle:', error);
       }
@@ -135,7 +308,7 @@ export default defineComponent({
         if (track.value && progress.value >= track.value.duration_ms) {
           stopProgress();
           console.log('Piste terminée, attente de la suivante...');
-          nextTrack(); // Passer à la piste suivante automatiquement
+          nextTrack();
         }
       }, 1000);
     };
@@ -146,19 +319,6 @@ export default defineComponent({
         progressInterval = null;
       }
     };
-
-    onMounted(() => {
-      const checkPlayerReady = setInterval(() => {
-        if (isPlayerReady.value && player.value) {
-          setupPlayerListeners();
-          clearInterval(checkPlayerReady);
-        }
-      }, 100);
-    });
-
-    onUnmounted(() => {
-      stopProgress();
-    });
 
     return {
       track,
