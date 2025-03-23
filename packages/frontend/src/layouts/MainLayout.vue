@@ -5,16 +5,24 @@
     <div class="main-content">
       <RouterView />
     </div>
-    <div class="player-placeholder">
-      <!-- Emplacement pour le lecteur (à ajouter plus tard) -->
-      <p>Lecteur Spotify (à venir)</p>
-    </div>
+    <SpotifyPlayer class="player" v-if="accessToken" :token="accessToken" />
   </div>
 </template>
 
 <script setup lang="ts">
+import SpotifyPlayer from '../components/SpotifyPlayer.vue';
 import SideMenu from '../components/SideMenu.vue';
 import { RouterView } from 'vue-router';
+
+import { ref, onMounted } from 'vue';
+import { fetchToken } from '../services/authService';
+
+// Récupérer le token pour le lecteur
+const accessToken = ref<string | null>(null);
+
+onMounted(async () => {
+  accessToken.value = await fetchToken();
+});
 </script>
 
 <style scoped>
@@ -39,13 +47,10 @@ import { RouterView } from 'vue-router';
   padding: 1rem;
 }
 
-.player-placeholder {
+.player {
   grid-column: 2 / 3;
   grid-row: 2 / 3;
   background-color: var(--spotify-dark-grey);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 1rem;
 }
 </style>

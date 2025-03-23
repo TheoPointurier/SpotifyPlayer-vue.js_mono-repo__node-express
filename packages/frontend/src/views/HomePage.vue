@@ -1,20 +1,9 @@
 <!-- src/components/HomePage.vue -->
 <template>
   <div class="container">
-    <h1>Spotify Player</h1>
-    <div class="container-buttons">
-      <button class="button-primary" @click="testBackend">Tester le backend</button>
-      <p>{{ message }}</p>
-      <button class="button-primary" @click="loginSpotify" v-if="!accessToken">Connexion Spotify</button>
-      <button class="button-secondary" @click="logoutUser" v-if="accessToken">Déconnexion</button>
-      <button class="button-primary" @click="fetchProfile" v-if="accessToken">Récupérer profil</button>
-      <p v-if="profile">Bonjour, {{ profile.display_name }}</p>
-    </div>
-
     <div class="container-player">
       <PlaylistSelector v-if="accessToken" :token="accessToken" :playlists="playlists"
         @select-playlist="selectPlaylist" />
-      <SpotifyPlayer v-if="accessToken" :token="accessToken" />
       <TrackList v-if="accessToken && selectedPlaylist" :selected-playlist="selectedPlaylist" :tracks="tracks"
         :token="accessToken" :is-player-ready="isPlayerReady" @update-context="updateContext" />
       <div v-else-if="accessToken">
@@ -26,24 +15,21 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import SpotifyPlayer from '../components/SpotifyPlayer.vue';
 import PlaylistSelector from '../components/PlaylistSelector.vue';
 import TrackList from '../components/TrackList.vue';
-import { fetchToken, logout, getProfile } from '../services/authService';
-import { login } from '../services/spotifyService';
+import { fetchToken } from '../services/authService';
 import { getUserPlaylists, getPlaylistTracks } from '../services/spotifyService';
 import { isPlayerReady } from '../services/spotifyPlayerSetup';
 import { clearQueue, addToQueue } from '../services/playbackState';
 
 // Variables réactives
-const message = ref('');
+
 const accessToken = ref<string | null>(null);
-const profile = ref<SpotifyProfile | null>(null);
 const playlists = ref<SpotifyPlaylist[]>([]);
 const selectedPlaylist = ref<SpotifyPlaylist | null>(null);
 const tracks = ref<SpotifyPlaylistTrack[]>([]);
 const hasInitializedContext = ref<boolean>(false);
-const APIURL = import.meta.env.VITE_BASE_URL;
+
 
 // Fonctions
 const fetchTokenOnMount = async () => {
@@ -92,30 +78,6 @@ const selectPlaylist = async (playlist: SpotifyPlaylist) => {
 
 const updateContext = (value: boolean) => {
   hasInitializedContext.value = value;
-};
-
-const testBackend = async () => {
-  const response = await fetch(`${APIURL}/api/test`);
-  const data = await response.json();
-  message.value = data.message;
-};
-
-const loginSpotify = () => {
-  login();
-};
-
-const logoutUser = async () => {
-  await logout();
-  accessToken.value = null;
-  profile.value = null;
-  playlists.value = [];
-  selectedPlaylist.value = null;
-  tracks.value = [];
-};
-
-const fetchProfile = async () => {
-  if (!accessToken.value) return;
-  profile.value = await getProfile(accessToken.value);
 };
 
 // Lifecycle hooks
