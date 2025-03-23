@@ -1,16 +1,16 @@
 <!-- src/components/HomePage.vue -->
 <template>
-  <div class="container">
-    <div class="container-player">
-      <PlaylistSelector v-if="accessToken" :token="accessToken" :playlists="playlists"
-        @select-playlist="selectPlaylist" />
-      <TrackList v-if="accessToken && selectedPlaylist" :selected-playlist="selectedPlaylist" :tracks="tracks"
-        :token="accessToken" :is-player-ready="isPlayerReady" @update-context="updateContext" />
-      <div v-else-if="accessToken">
-        <p>Sélectionnez une playlist pour accéder aux morceaux</p>
-      </div>
+
+  <div class="container-player">
+    <PlaylistSelector v-if="accessToken" :token="accessToken" :playlists="playlists"
+      @select-playlist="selectPlaylist" />
+    <TrackList v-if="accessToken && selectedPlaylist" :selected-playlist="selectedPlaylist" :tracks="tracks"
+      :token="accessToken" :is-player-ready="isPlayerReady" @update-context="updateContext" />
+    <div v-else-if="accessToken" class="tracks-section">
+      <p>Sélectionnez une playlist pour accéder aux morceaux</p>
     </div>
   </div>
+
 </template>
 
 <script setup lang="ts">
@@ -100,10 +100,10 @@ watch(accessToken, async (newToken) => {
   display: grid;
   align-items: center;
   gap: 1rem;
-  grid-template-columns: 20% 50% 30%;
-  height: 75vh;
-  width: 90%;
+  grid-template-columns: 20% 80%;
   margin: 0 auto;
+  max-height: 80vh;
+  width: 100%;
 }
 
 .container-buttons {

@@ -1,34 +1,43 @@
 <!-- src/components/SpotifyPlayer.vue -->
 <template>
   <div class="player card">
-    <h2>Now Playing</h2>
     <div v-if="track" class="track-info">
       <img :src="track.album.images[0]?.url" alt="Album cover" class="album-cover" />
       <div class="track-details">
         <p class="track-name">{{ track.name }}</p>
         <p class="artist-name">{{ track.artists[0].name }}</p>
-        <div class="progress-container">
-          <span class="progress-time">{{ Math.floor(progress / 1000) }}</span>
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: `${(progress / track.duration_ms) * 100}%` }"></div>
-          </div>
-          <span class="progress-time">{{ Math.floor(track.duration_ms / 1000) }}sec</span>
-        </div>
       </div>
     </div>
-    <p v-else class="no-track">No track playing</p>
+    <div v-else class="no-track">No track playing</div>
     <div class="controls">
-      <button class="control-button" @click="previousTrack" title="Previous">
-        <i class="fas fa-backward"></i>
+      <div class="main-controls">
+        <button class="control-button" @click="previousTrack" title="Previous">
+          <i class="fas fa-backward"></i>
+        </button>
+        <button class="control-button play-pause" @click="togglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
+          <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+        </button>
+        <button class="control-button" @click="nextTrack" title="Next">
+          <i class="fas fa-forward"></i>
+        </button>
+        <button class="control-button" @click="toggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
+          <i class="fas fa-shuffle"></i>
+        </button>
+      </div>
+      <div class="progress-container">
+        <span class="progress-time">{{ Math.floor(progress / 1000) }}</span>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: `${(progress / track.duration_ms) * 100}%` }"></div>
+        </div>
+        <span class="progress-time">{{ Math.floor(track.duration_ms / 1000) }}sec</span>
+      </div>
+    </div>
+    <div class="other-controls">
+      <button class="control-button" title="Repeat">
+        <i class="fas fa-redo"></i>
       </button>
-      <button class="control-button play-pause" @click="togglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
-        <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
-      </button>
-      <button class="control-button" @click="nextTrack" title="Next">
-        <i class="fas fa-forward"></i>
-      </button>
-      <button class="control-button" @click="toggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
-        <i class="fas fa-shuffle"></i>
+      <button class="control-button" title="Volume">
+        <i class="fas fa-volume-up"></i>
       </button>
     </div>
   </div>
@@ -352,18 +361,20 @@ export default defineComponent({
 </script>
 <style scoped>
 .player {
-  grid-column: 2 / 3;
+  padding: 0 0.5rem;
+  width: 100%;
+  grid-column: 1 / 3;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
-  max-height: 300px;
+  justify-content: space-between;
+  max-height: 20vh;
 }
 
 .track-info {
+  height: 100%;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   margin-bottom: 16px;
 }
@@ -419,11 +430,19 @@ export default defineComponent({
 .no-track {
   font-size: 16px;
   color: var(--spotify-light-grey);
+  justify-self: start;
 }
 
 .controls {
   display: flex;
+  flex-direction: column;
   gap: 16px;
+}
+
+.main-controls {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
 }
 
 .control-button {

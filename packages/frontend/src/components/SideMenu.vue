@@ -1,23 +1,23 @@
 <!-- src/components/SideMenu.vue -->
 <template>
   <div class="side-menu">
+    <img src="../assets/spotify-logo.png" alt="Spotify logo" />
     <h1>Spotify Player</h1>
-    <img src="https://developer-assets.spotifycdn.com/images/guidelines/design/icon1.svg" alt="Spotify logo" />
     <nav class="menu">
       <input type="text" placeholder="Rechercher une playlist" />
-      <ul>
+      <ul class="menu-list">
         <li>
           <button class="button-primary" @click="testBackend">Tester le backend</button>
           <p>{{ message }}</p>
         </li>
-        <li>
-          <button class="button-primary" @click="loginSpotify" v-if="!accessToken">Connexion Spotify</button>
+        <li @click="loginSpotify" v-if="!accessToken">
+          <button class="button-primary">Connexion Spotify</button>
         </li>
-        <li>
-          <button class="button-secondary" @click="logoutUser" v-if="accessToken">Déconnexion</button>
+        <li @click="logoutUser" v-if="accessToken">
+          <button class="button-secondary">Déconnexion</button>
         </li>
-        <li>
-          <button class="button-primary" @click="fetchProfile" v-if="accessToken">Récupérer profil</button>
+        <li @click="fetchProfile" v-if="accessToken">
+          <button class="button-primary">Récupérer profil</button>
           <p v-if="profile">Bonjour, {{ profile.display_name }}</p>
         </li>
         <li>
@@ -89,7 +89,6 @@ onMounted(async () => {
 <style scoped>
 .side-menu {
   background-color: var(--spotify-dark-grey);
-  padding: 1rem;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -97,13 +96,15 @@ onMounted(async () => {
 }
 
 h1 {
-  font-size: 1.5rem;
+  padding: 0.5rem 2px;
+  font-size: 1.2rem;
   color: var(--spotify-white);
   margin: 0;
 }
 
 img {
   width: 50px;
+  margin: 0.5rem auto 0 auto;
 }
 
 .menu {
@@ -111,6 +112,14 @@ img {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding: 0 1rem;
+}
+
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  word-break: break-all;
 }
 
 input {

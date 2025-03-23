@@ -5,7 +5,7 @@
     <div class="main-content">
       <RouterView />
     </div>
-    <SpotifyPlayer class="player" v-if="accessToken" :token="accessToken" />
+    <SpotifyPlayer v-if="accessToken" :token="accessToken" />
   </div>
 </template>
 
@@ -27,17 +27,15 @@ onMounted(async () => {
 
 <style scoped>
 .main-layout {
+  height: 100vh;
+  height: 100dvh;
   display: grid;
-  grid-template-columns: 10% 90%;
-  /* SideMenu à gauche, contenu principal à droite */
-  grid-template-rows: auto 100px;
-  /* Contenu principal en haut, lecteur en bas */
-  min-height: 100vh;
+  grid-template-columns: 15% 85%;
 }
 
 .side-menu {
   grid-column: 1 / 2;
-  grid-row: 1 / 3;
+  grid-row: 1 / 2;
   /* Le SideMenu s'étend sur toute la hauteur */
 }
 
@@ -45,12 +43,7 @@ onMounted(async () => {
   grid-column: 2 / 3;
   grid-row: 1 / 2;
   padding: 1rem;
-}
-
-.player {
-  grid-column: 2 / 3;
-  grid-row: 2 / 3;
-  background-color: var(--spotify-dark-grey);
-  padding: 1rem;
+  max-height: 80vh;
+  max-height: 80dvh;
 }
 </style>

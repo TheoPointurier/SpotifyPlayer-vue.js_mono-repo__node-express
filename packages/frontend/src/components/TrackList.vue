@@ -106,9 +106,9 @@ export default defineComponent({
 
 <style scoped>
 .tracks-section {
-  grid-column: 3 / 4;
-  margin-top: 24px;
-  max-height: 100%;
+  grid-column: 2 / 3;
+  max-height: 80vh;
+  overflow: scroll;
   scrollbar-width: thin;
   /* For Firefox */
   scrollbar-color: var(--spotify-white) transparent;
@@ -129,7 +129,6 @@ export default defineComponent({
   }
 
   overflow-y: auto;
-  max-height: 100%;
 
   &:not(:hover)::-webkit-scrollbar-thumb {
     background-color: transparent;

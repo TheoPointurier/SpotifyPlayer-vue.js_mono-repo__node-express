@@ -6,7 +6,6 @@
       <ul class="playlist-list">
         <li v-for="playlist in playlists" :key="playlist.id" class="playlist-item card"
           @click="emitSelectPlaylist(playlist)">
-          {{ console.log("coucou", playlist.images?.[1]?.url) }}
           <img :src="playlist.images?.[1]?.url || 'https://via.placeholder.com/200'" alt="Playlist cover"
             class="playlist-cover" @error="handleImageError" />
           <button class="playlist-button">
@@ -54,7 +53,7 @@ export default defineComponent({
 <style scoped>
 .playlist-selector {
   grid-column: 1 / 2;
-  max-height: 100%;
+  max-height: 80vh;
   scrollbar-width: thin;
   /* For Firefox */
   scrollbar-color: var(--spotify-white) transparent;
@@ -75,7 +74,6 @@ export default defineComponent({
   }
 
   overflow-y: auto;
-  max-height: 100%;
 
   &:not(:hover)::-webkit-scrollbar-thumb {
     background-color: transparent;
