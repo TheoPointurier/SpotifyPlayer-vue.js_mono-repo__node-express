@@ -4,37 +4,22 @@
     <h2>Mes Playlists</h2>
     <section class="playlists-section">
       <ul class="playlist-list">
-        <li v-for="playlist in playlists" :key="playlist.id" class="playlist-item card">
-          <button class="playlist-button" @click="selectPlaylist(playlist)">
+        <li v-for="playlist in playlists" :key="playlist.id" class="playlist-item card"
+          @click="emitSelectPlaylist(playlist)">
+          {{ console.log("coucou", playlist.images?.[1]?.url) }}
+          <img :src="playlist.images?.[1]?.url || 'https://via.placeholder.com/200'" alt="Playlist cover"
+            class="playlist-cover" @error="handleImageError" />
+          <button class="playlist-button">
             {{ playlist.name }}
           </button>
         </li>
       </ul>
-
-      <div v-if="selectedPlaylist" class="tracks-section">
-        <h3>{{ selectedPlaylist.name }}</h3>
-        <ul class="track-list">
-          <li v-for="item in tracks" :key="item.track.id" class="track-item card">
-            <div class="track-info">
-              <span class="track-name">{{ item.track.name }}</span>
-              <span class="artist-name">{{ item.track.artists[0].name }}</span>
-            </div>
-            <button class="button-primary play-button" @click="handlePlayTrack(item.track.uri)"
-              :disabled="!isPlayerReady">
-              Play
-            </button>
-          </li>
-        </ul>
-      </div>
     </section>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import { getUserPlaylists, getPlaylistTracks } from '../services/spotifyService';
-import { deviceId, isPlayerReady, player } from '../services/spotifyPlayerSetup';
-import { queue, addToQueue, setCurrentTrackUri, clearQueue } from '../services/playbackState';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'PlaylistSelector',
@@ -43,123 +28,77 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    playlists: {
+      type: Array as () => SpotifyPlaylist[],
+      default: () => [], // Ajouter une valeur par défaut
+    },
   },
-  setup(props) {
-    const playlists = ref<SpotifyPlaylist[]>([]);
-    const selectedPlaylist = ref<SpotifyPlaylist | null>(null);
-    const tracks = ref<SpotifyPlaylistTrack[]>([]);
-    const hasInitializedContext = ref<boolean>(false);
-
-    const fetchPlaylists = async () => {
-      try {
-        playlists.value = await getUserPlaylists(props.token);
-      } catch (error) {
-        console.error('Error fetching playlists:', error);
-      }
+  setup(props, { emit }) {
+    const emitSelectPlaylist = (playlist: SpotifyPlaylist) => {
+      emit('select-playlist', playlist);
     };
 
-    const selectPlaylist = async (playlist: SpotifyPlaylist) => {
-      selectedPlaylist.value = playlist;
-      try {
-        tracks.value = await getPlaylistTracks(props.token, playlist.id);
-        // Vider la file d'attente actuelle
-        clearQueue();
-        // Ajouter les pistes de la playlist à la file d'attente
-        for (const track of tracks.value) {
-          addToQueue(track.track.uri);
-        }
-      } catch (error) {
-        console.error('Error fetching playlist tracks:', error);
-      }
+    const handleImageError = (event: Event) => {
+      const img = event.target as HTMLImageElement;
+      img.src = 'https://placehold.co/200x200'; // Image de secours
     };
-
-    const handlePlayTrack = async (trackUri: string) => {
-      console.log('Attempting to play track:', trackUri);
-      console.log('isPlayerReady:', isPlayerReady.value);
-      console.log('deviceId:', deviceId.value);
-      console.log('Queue actuelle:', queue.value); // Ajouter ce log
-
-      try {
-        if (!isPlayerReady.value || !deviceId.value || !player.value) {
-          console.log('Le lecteur n’est pas prêt. Attente...');
-          let attempts = 0;
-          const maxAttempts = 10;
-          while (!isPlayerReady.value && attempts < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            attempts++;
-            console.log(`Attente du lecteur... Tentative ${attempts}/${maxAttempts}`);
-          }
-
-          if (!isPlayerReady.value || !deviceId.value || !player.value) {
-            throw new Error('Le lecteur n’est pas prêt après attente. Veuillez réessayer.');
-          }
-        }
-
-        addToQueue(trackUri);
-        setCurrentTrackUri(trackUri);
-
-        const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId.value}`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${props.token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            uris: queue.value,
-            offset: { uri: trackUri },
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Erreur lors de la définition du contexte de lecture: ${response.statusText}`);
-        }
-
-        hasInitializedContext.value = true;
-
-        await player.value.resume().then(() => {
-          console.log('Lecture reprise avec succès via le SDK !');
-        });
-        console.log('Piste lancée avec succès via le SDK !');
-      } catch (error) {
-        console.error('Erreur lors de la lecture de la piste:', error);
-        alert('Erreur lors de la lecture de la piste. Veuillez réessayer.');
-      }
-    };
-
-
-    onMounted(fetchPlaylists);
 
     return {
-      playlists,
-      selectedPlaylist,
-      tracks,
-      selectPlaylist,
-      handlePlayTrack,
-      isPlayerReady,
+      emitSelectPlaylist,
+      handleImageError,
     };
   },
 });
 </script>
+
 <style scoped>
 .playlist-selector {
-  grid-column: 3 / 4;
+  grid-column: 1 / 2;
   max-height: 100%;
-  overflow-y: scroll;
-  width: 42rem;
+  scrollbar-width: thin;
+  /* For Firefox */
+  scrollbar-color: var(--spotify-white) transparent;
+  /* For Firefox */
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    /* For WebKit browsers */
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--spotify-white);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  overflow-y: auto;
+  max-height: 100%;
+
+  &:not(:hover)::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    /* Hide scrollbar thumb when not hovering */
+  }
+
 }
 
 .playlist-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
 }
 
+
 .playlists-section {
   display: flex;
+  flex-direction: column;
 }
 
 .playlist-item {
   padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .playlist-button {
@@ -168,44 +107,16 @@ export default defineComponent({
   color: var(--spotify-white);
   font-size: 16px;
   font-weight: 500;
-  text-align: left;
+  text-align: center;
   width: 100%;
   cursor: pointer;
 }
 
-.tracks-section {
-  margin-top: 24px;
-}
-
-.track-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.track-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-}
-
-.track-info {
-  flex: 1;
-}
-
-.track-name {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.artist-name {
-  font-size: 14px;
-  color: var(--spotify-light-grey);
-}
-
-.play-button {
-  padding: 6px 12px;
-  font-size: 12px;
+.playlist-cover {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }
 </style>

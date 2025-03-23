@@ -12,7 +12,7 @@
           <div class="progress-bar">
             <div class="progress-fill" :style="{ width: `${(progress / track.duration_ms) * 100}%` }"></div>
           </div>
-          <span class="progress-time">{{ Math.floor(track.duration_ms / 1000) }}</span>
+          <span class="progress-time">{{ Math.floor(track.duration_ms / 1000) }}sec</span>
         </div>
       </div>
     </div>
@@ -352,7 +352,7 @@ export default defineComponent({
 </script>
 <style scoped>
 .player {
-  grid-column: 1 / 3;
+  grid-column: 2 / 3;
   display: flex;
   flex-direction: column;
   align-items: center;

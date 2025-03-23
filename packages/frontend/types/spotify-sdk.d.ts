@@ -43,3 +43,8 @@ interface Window {
   spotifySDKReady: boolean;
   deviceId?: string;
 }
+
+interface TrackList {
+  items: SpotifyPlaylistTrack[];
+  total: number;
+}

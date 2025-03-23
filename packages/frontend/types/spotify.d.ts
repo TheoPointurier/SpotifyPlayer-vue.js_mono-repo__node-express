@@ -22,7 +22,7 @@ interface SpotifyPlaylist {
   id: string;
   name: string;
   description?: string;
-  images: { url: string }[];
+  images: { url: string, height: number, width: number }[];
   tracks: {
     href: string;
     total: number;

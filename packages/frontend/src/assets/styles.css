@@ -96,8 +96,6 @@ p {
 .card {
   background-color: var(--spotify-dark-grey);
   border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background-color 0.2s ease;
 }

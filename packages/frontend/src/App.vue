@@ -1,20 +1,10 @@
 <!-- src/App.vue -->
 <template>
-  <div class="app">
-    <HomePage />
-  </div>
+  <RouterView />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import HomePage from './views/HomePage.vue';
-
-export default defineComponent({
-  name: 'App',
-  components: {
-    HomePage,
-  },
-});
+<script setup lang="ts">
+import { RouterView } from 'vue-router';
 </script>
 
 <style scoped>
