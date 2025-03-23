@@ -26,6 +26,7 @@ declare namespace Spotify {
 
     connect(): Promise<boolean>;
     nextTrack(): Promise<void>;
+    getCurrentState(): Promise<PlaybackState | null>;
     previousTrack(): Promise<void>;
     toggleShuffle(state: boolean): Promise<void>;
     disconnect(): void;

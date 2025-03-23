@@ -23,13 +23,9 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'PlaylistSelector',
   props: {
-    token: {
-      type: String,
-      required: true,
-    },
     playlists: {
       type: Array as () => SpotifyPlaylist[],
-      default: () => [], // Ajouter une valeur par défaut
+      default: () => [],
     },
   },
   setup(props, { emit }) {
@@ -39,7 +35,7 @@ export default defineComponent({
 
     const handleImageError = (event: Event) => {
       const img = event.target as HTMLImageElement;
-      img.src = 'https://placehold.co/200x200'; // Image de secours
+      img.src = 'https://placehold.co/200x200';
     };
 
     return {
@@ -52,8 +48,9 @@ export default defineComponent({
 
 <style scoped>
 .playlist-selector {
+  height: 100%;
+  width: 100%;
   grid-column: 1 / 2;
-  max-height: 80vh;
   scrollbar-width: thin;
   /* For Firefox */
   scrollbar-color: var(--spotify-white) transparent;
@@ -73,7 +70,7 @@ export default defineComponent({
     background: transparent;
   }
 
-  overflow-y: auto;
+  overflow-y: scroll;
 
   &:not(:hover)::-webkit-scrollbar-thumb {
     background-color: transparent;
@@ -94,6 +91,7 @@ export default defineComponent({
 
 .playlist-item {
   padding: 12px;
+  margin-bottom: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -114,6 +112,7 @@ export default defineComponent({
   width: 100%;
   height: 150px;
   object-fit: cover;
+  flex-shrink: 1;
   border-radius: 8px;
   margin-bottom: 8px;
 }

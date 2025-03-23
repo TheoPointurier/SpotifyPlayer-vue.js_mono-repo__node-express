@@ -1,3 +1,5 @@
+import { deviceId } from "./spotifyPlayerSetup";
+
 // src/services/spotifyService.ts
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -5,52 +7,96 @@ export const login = () => {
   window.location.href = `${BASE_URL}/auth/login`;
 };
 
-export const getCurrentTrack = async (token: string): Promise<SpotifyTrack> => {
-  const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+export const getUserPlaylists = async (): Promise<SpotifyPlaylist[]> => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'GET',
+        path: '/v1/me/playlists',
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch current track');
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Non authentifié. Veuillez vous reconnecter.');
+      }
+      const errorText = await response.text();
+      throw new Error(`Erreur lors de la récupération des playlists: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.items || [];
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data;
 };
 
-export const getUserPlaylists = async (token: string): Promise<SpotifyPlaylist[]> => {
-  const response = await fetch('https://api.spotify.com/v1/me/playlists', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+export const getPlaylistTracks = async (playlistId: string): Promise<SpotifyPlaylistTrack[]> => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'GET',
+        path: `/v1/playlists/${playlistId}/tracks`,
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch playlists');
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Non authentifié. Veuillez vous reconnecter.');
+      }
+      const errorText = await response.text();
+      throw new Error(`Erreur lors de la récupération des pistes: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.items || [];
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
-
-  const data = await response.json();
-  console.log("data", data);
-  return data.items;
 };
 
-export const getPlaylistTracks = async (token: string, playlistId: string): Promise<SpotifyPlaylistTrack[]> => {
-  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+export const playTrack = async (trackUri: string, queue: string[]): Promise<void> => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'PUT',
+        path: `/v1/me/player/play?device_id=${deviceId.value}`,
+        body: {
+          uris: queue,
+          offset: { uri: trackUri },
+        },
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch playlist tracks');
+    if (!response.ok) {
+      if (response.status === 204) {
+        console.log('Piste jouée avec succès:', trackUri);
+        return;
+      }
+      const errorText = await response.text();
+      throw new Error(`Erreur lors de la lecture de la piste: ${response.status} - ${errorText}`);
+    }
+
+    console.log('Piste jouée avec succès:', trackUri);
+  } catch (error) {
+    console.error('Erreur lors de la lecture de la piste:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data.items;
 };

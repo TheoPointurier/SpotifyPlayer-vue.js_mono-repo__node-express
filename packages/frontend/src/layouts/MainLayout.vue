@@ -1,36 +1,29 @@
-<!-- src/layouts/MainLayout.vue -->
+<script setup lang="ts">
+import SpotifyPlayer from '../components/SpotifyPlayer.vue';
+import SideMenu from '../components/SideMenu.vue';
+import { RouterView } from 'vue-router';
+</script>
+
 <template>
   <div class="main-layout">
     <SideMenu class="side-menu" />
     <div class="main-content">
       <RouterView />
     </div>
-    <SpotifyPlayer v-if="accessToken" :token="accessToken" />
+    <SpotifyPlayer />
   </div>
 </template>
 
-<script setup lang="ts">
-import SpotifyPlayer from '../components/SpotifyPlayer.vue';
-import SideMenu from '../components/SideMenu.vue';
-import { RouterView } from 'vue-router';
-
-import { ref, onMounted } from 'vue';
-import { fetchToken } from '../services/authService';
-
-// Récupérer le token pour le lecteur
-const accessToken = ref<string | null>(null);
-
-onMounted(async () => {
-  accessToken.value = await fetchToken();
-});
-</script>
-
 <style scoped>
 .main-layout {
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
+  /* max-height: 1000px; */
+  align-content: center;
+  max-width: 1600px;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 15% 85%;
+  grid-template-rows: 80% 20%;
 }
 
 .side-menu {
@@ -42,8 +35,8 @@ onMounted(async () => {
 .main-content {
   grid-column: 2 / 3;
   grid-row: 1 / 2;
-  padding: 1rem;
-  max-height: 80vh;
-  max-height: 80dvh;
+  height: 100%;
+  width: 100%;
+  align-content: center;
 }
 </style>

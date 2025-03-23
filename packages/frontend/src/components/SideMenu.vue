@@ -10,13 +10,13 @@
           <button class="button-primary" @click="testBackend">Tester le backend</button>
           <p>{{ message }}</p>
         </li>
-        <li @click="loginSpotify" v-if="!accessToken">
+        <li @click="loginSpotify" v-if="!isAuthenticated">
           <button class="button-primary">Connexion Spotify</button>
         </li>
-        <li @click="logoutUser" v-if="accessToken">
+        <li @click="logoutUser" v-if="isAuthenticated">
           <button class="button-secondary">Déconnexion</button>
         </li>
-        <li @click="fetchProfile" v-if="accessToken">
+        <li @click="fetchProfile" v-if="isAuthenticated">
           <button class="button-primary">Récupérer profil</button>
           <p v-if="profile">Bonjour, {{ profile.display_name }}</p>
         </li>
@@ -39,26 +39,28 @@ import { login } from '../services/spotifyService';
 
 const message = ref('');
 const APIURL = import.meta.env.VITE_BASE_URL;
-
-const accessToken = ref<string | null>(null);
+const isAuthenticated = ref<boolean>(false);
 const profile = ref<SpotifyProfile | null>(null);
-const playlists = ref<SpotifyPlaylist[]>([]);
-const selectedPlaylist = ref<SpotifyPlaylist | null>(null);
-const tracks = ref<SpotifyPlaylistTrack[]>([]);
 
 const fetchTokenOnMount = async () => {
   try {
-    accessToken.value = await fetchToken();
-    console.log('Token récupéré:', accessToken.value);
+    await fetchToken();
+    isAuthenticated.value = true;
   } catch (error) {
     console.error('Erreur lors de la récupération du token:', error);
+    isAuthenticated.value = false;
   }
 };
 
 const testBackend = async () => {
-  const response = await fetch(`${APIURL}/api/test`);
-  const data = await response.json();
-  message.value = data.message;
+  try {
+    const response = await fetch(`${APIURL}/api/test`);
+    const data = await response.json();
+    message.value = data.message;
+  } catch (error) {
+    console.error('Erreur lors du test du backend:', error);
+    message.value = 'Erreur lors du test du backend';
+  }
 };
 
 const loginSpotify = () => {
@@ -66,30 +68,36 @@ const loginSpotify = () => {
 };
 
 const logoutUser = async () => {
-  await logout();
-  accessToken.value = null;
-  profile.value = null;
-  playlists.value = [];
-  selectedPlaylist.value = null;
-  tracks.value = [];
+  try {
+    await logout();
+    isAuthenticated.value = false;
+    profile.value = null;
+  } catch (error) {
+    console.error('Erreur lors de la déconnexion:', error);
+  }
 };
 
 const fetchProfile = async () => {
-  if (!accessToken.value) return;
-  profile.value = await getProfile(accessToken.value);
+  try {
+    profile.value = await getProfile();
+  } catch (error) {
+    console.error('Erreur lors de la récupération du profil:', error);
+    if ((error as Error).message.includes('Non authentifié')) {
+      window.location.href = '/login';
+    }
+  }
 };
 
 onMounted(async () => {
   await fetchTokenOnMount();
-  // await fetchPlaylists();
 });
-
 </script>
 
 <style scoped>
 .side-menu {
   background-color: var(--spotify-dark-grey);
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1rem;

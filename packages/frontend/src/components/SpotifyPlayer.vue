@@ -11,31 +11,33 @@
     <div v-else class="no-track">No track playing</div>
     <div class="controls">
       <div class="main-controls">
-        <button class="control-button" @click="previousTrack" title="Previous">
+        <button class="control-button" title="Repeat">
+          <i class="fas fa-redo"></i>
+        </button>
+        <button class="control-button" @click="handlePreviousTrack" title="Previous">
           <i class="fas fa-backward"></i>
         </button>
-        <button class="control-button play-pause" @click="togglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
+        <button class="control-button play-pause" @click="handleTogglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
           <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
         </button>
-        <button class="control-button" @click="nextTrack" title="Next">
+        <button class="control-button" @click="handleNextTrack" title="Next">
           <i class="fas fa-forward"></i>
         </button>
-        <button class="control-button" @click="toggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
+        <button class="control-button" @click="handleToggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
           <i class="fas fa-shuffle"></i>
         </button>
       </div>
       <div class="progress-container">
         <span class="progress-time">{{ Math.floor(progress / 1000) }}</span>
         <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: `${(progress / track.duration_ms) * 100}%` }"></div>
+          <div class="progress-fill"
+            :style="{ width: `${track && track.duration_ms ? (progress / track.duration_ms) * 100 : 0}%` }"></div>
         </div>
-        <span class="progress-time">{{ Math.floor(track.duration_ms / 1000) }}sec</span>
+        <span class="progress-time">{{ track && track.duration_ms ? Math.floor(track.duration_ms / 1000) + 'sec' :
+          '0sec' }}</span>
       </div>
     </div>
     <div class="other-controls">
-      <button class="control-button" title="Repeat">
-        <i class="fas fa-redo"></i>
-      </button>
       <button class="control-button" title="Volume">
         <i class="fas fa-volume-up"></i>
       </button>
@@ -45,39 +47,37 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
-import { player, isPlayerReady, deviceId } from '../services/spotifyPlayerSetup';
+import { player } from '../services/spotifyPlayerSetup';
 import { queue, currentTrackUri, setCurrentTrackUri } from '../services/playbackState';
+import {
+  initializePlayer,
+  disconnectPlayer,
+  togglePlayPause,
+  nextTrack,
+  previousTrack,
+  toggleShuffle,
+} from '../services/spotifyPlayerService';
 
 export default defineComponent({
   name: 'SpotifyPlayer',
-  props: {
-    token: {
-      type: String,
-      required: true,
-    },
-  },
-  setup(props) {
+  setup() {
     const track = ref<Spotify.PlaybackState['track_window']['current_track'] | null>(null);
     const progress = ref<number>(0);
     const isPlaying = ref<boolean>(false);
     const isShuffling = ref<boolean>(false);
     let progressInterval: NodeJS.Timeout | null = null;
 
-    // Charger le SDK dynamiquement
     const loadSpotifySDK = () => {
       return new Promise<void>((resolve, reject) => {
-        // Vérifier si le SDK est déjà chargé
         if (window.Spotify) {
           resolve();
           return;
         }
 
-        // Créer une balise script pour charger le SDK
         const script = document.createElement('script');
         script.src = 'https://sdk.scdn.co/spotify-player.js';
         script.async = true;
 
-        // Définir la fonction onSpotifyWebPlaybackSDKReady
         window.onSpotifyWebPlaybackSDKReady = () => {
           console.log('Spotify Web Playback SDK is ready!');
           resolve();
@@ -92,241 +92,85 @@ export default defineComponent({
       });
     };
 
-    // Initialiser le player Spotify
-    const initializePlayer = () => {
-      if (!window.Spotify || !props.token) {
-        console.log('Spotify SDK ou token manquant');
-        return;
-      }
-
-      player.value = new window.Spotify.Player({
-        name: 'Vue Spotify Player',
-        getOAuthToken: (cb: (token: string) => void) => {
-          cb(props.token);
-        },
-        volume: 0.5,
-      });
-
-      // Ajouter les listeners
-      player.value.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
-        deviceId.value = device_id;
-        isPlayerReady.value = true;
-      });
-
-      player.value.addListener('not_ready', ({ device_id }) => {
-        console.log('Device ID has gone offline', device_id);
-        isPlayerReady.value = false;
-      });
-
-      player.value.addListener('player_state_changed', (state) => {
-        if (!state) return;
-        console.log('État du lecteur mis à jour:', state);
-        track.value = state.track_window.current_track;
-        progress.value = state.position;
-        isPlaying.value = !state.paused;
-        isShuffling.value = state.shuffle;
-
-        if (track.value && track.value.uri !== currentTrackUri.value) {
-          setCurrentTrackUri(track.value.uri);
-        }
-
-        if (isPlaying.value) {
-          console.log('Lecture démarrée !');
-          startProgress();
-        } else {
-          console.log('Lecture mise en pause.');
-          stopProgress();
-        }
-      });
-
-      // Connecter le player
-      player.value.connect().then((success: boolean) => {
-        if (success) {
-          console.log('Player connecté avec succès !');
-        } else {
-          console.error('Échec de la connexion du player');
-        }
-      });
-    };
-
-    // Charger et initialiser le SDK au montage du composant
     onMounted(async () => {
       try {
         await loadSpotifySDK();
-        initializePlayer();
+        await initializePlayer();
+
+        player.value?.addListener('player_state_changed', (state) => {
+          if (!state) return;
+          console.log('État du lecteur mis à jour:', state);
+          track.value = state.track_window.current_track;
+          progress.value = state.position;
+          isPlaying.value = !state.paused;
+          isShuffling.value = state.shuffle;
+
+          if (track.value && track.value.uri !== currentTrackUri.value) {
+            setCurrentTrackUri(track.value.uri);
+          }
+
+          if (isPlaying.value) {
+            console.log('Lecture démarrée !');
+            startProgress();
+          } else {
+            console.log('Lecture mise en pause.');
+            stopProgress();
+          }
+        });
       } catch (error) {
         console.error('Erreur lors de l’initialisation du Spotify SDK:', error);
+        if ((error as Error).message.includes('Utilisateur non authentifié')) {
+          window.location.href = '/login';
+        }
       }
     });
 
-    // Nettoyer lors de la destruction du composant
     onUnmounted(() => {
       stopProgress();
-      if (player.value) {
-        player.value.disconnect();
-        player.value = null;
-        isPlayerReady.value = false;
-      }
+      disconnectPlayer();
     });
 
-    // Basculer entre lecture et pause
-    const togglePlayPause = async () => {
-      if (!player.value) return;
+    const handleTogglePlayPause = async () => {
       try {
-        if (isPlaying.value) {
-          await player.value.pause();
-          console.log('Lecture mise en pause');
-        } else {
-          await player.value.resume();
-          console.log('Lecture reprise');
-        }
+        await togglePlayPause();
       } catch (error) {
-        console.error('Erreur lors de la gestion de la lecture/pause:', error);
+        console.error('Erreur lors de togglePlayPause:', error);
       }
     };
 
-    const ensureDeviceActive = async () => {
-      if (!deviceId.value || !props.token) {
-        console.error('Device ID ou token non disponible');
-        return false;
-      }
-
+    const handleNextTrack = async () => {
       try {
-        // Verify if the device is already active
-        const response = await fetch('https://api.spotify.com/v1/me/player', {
-          headers: {
-            Authorization: `Bearer ${props.token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.device && data.device.id === deviceId.value) {
-            console.log('Appareil déjà actif !');
-            return true;
-          }
-        }
-
-        // If not, transfer the playback to our device
-        console.log('Transfert de la lecture vers notre appareil...');
-        const transferResponse = await fetch('https://api.spotify.com/v1/me/player', {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${props.token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            device_ids: [deviceId.value],
-            play: false,
-          }),
-        });
-
-        if (!transferResponse.ok) {
-          console.error('Erreur lors du transfert de la lecture:', transferResponse.statusText);
-          return false;
-        }
-
-        console.log('Lecture transférée avec succès vers notre appareil !');
-        return true;
-      } catch (error) {
-        console.error('Erreur lors de la vérification/transfert de l’appareil:', error);
-        return false;
-      }
-    };
-
-    // Passer à la piste suivante
-    const nextTrack = async () => {
-      if (!player.value) {
-        console.error('Player non initialisé');
-        return;
-      }
-
-      const isDeviceActive = await ensureDeviceActive();
-      if (!isDeviceActive) {
-        console.error('Impossible d’exécuter la commande : appareil non actif');
-        return;
-      }
-
-      try {
-        await player.value.nextTrack();
-        console.log('Piste suivante');
+        await nextTrack();
         const currentIndex = queue.value.indexOf(currentTrackUri.value || '');
         if (currentIndex !== -1 && currentIndex < queue.value.length - 1) {
           setCurrentTrackUri(queue.value[currentIndex + 1]);
         }
       } catch (error) {
-        console.error('Erreur lors du passage à la piste suivante:', error);
+        console.error('Erreur lors de nextTrack:', error);
       }
     };
 
-    // Revenir à la piste précédente
-    const previousTrack = async () => {
-      if (!player.value) {
-        console.error('Player non initialisé');
-        return;
-      }
-
-      const isDeviceActive = await ensureDeviceActive();
-      if (!isDeviceActive) {
-        console.error('Impossible d’exécuter la commande : appareil non actif');
-        return;
-      }
-
+    const handlePreviousTrack = async () => {
       try {
-        await player.value.previousTrack();
-        console.log('Piste précédente');
+        await previousTrack();
         const currentIndex = queue.value.indexOf(currentTrackUri.value || '');
         if (currentIndex !== -1 && currentIndex > 0) {
           setCurrentTrackUri(queue.value[currentIndex - 1]);
         }
       } catch (error) {
-        console.error('Erreur lors du retour à la piste précédente:', error);
+        console.error('Erreur lors de previousTrack:', error);
       }
     };
 
-    // Activer/désactiver le mode shuffle
-    // Dans SpotifyPlayer.vue
-    const toggleShuffle = async () => {
-      if (!player.value) {
-        console.error('Player non initialisé');
-        return;
-      }
-
-      const isDeviceActive = await ensureDeviceActive();
-      if (!isDeviceActive) {
-        console.error('Impossible d’exécuter la commande : appareil non actif');
-        return;
-      }
-
+    const handleToggleShuffle = async () => {
       try {
-        // Utiliser l’API Spotify pour activer/désactiver le shuffle
-        const newShuffleState = !isShuffling.value;
-        const response = await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=${newShuffleState}&device_id=${deviceId.value}`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${props.token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Erreur lors de la gestion du shuffle: ${response.statusText}`);
-        }
-
-        console.log(newShuffleState ? 'Shuffle activé via API' : 'Shuffle désactivé via API');
-
-        // Mettre à jour l’état local (l’événement player_state_changed devrait aussi le faire)
+        const newShuffleState = await toggleShuffle(isShuffling.value);
         isShuffling.value = newShuffleState;
-
-        // Optionnel : Appeler toggleShuffle du SDK pour synchroniser
-        // await player.value.toggleShuffle(newShuffleState);
       } catch (error) {
-        console.error('Erreur lors de la gestion du shuffle:', error);
+        console.error('Erreur lors de toggleShuffle:', error);
       }
     };
 
-    // Gestion de la progression
     const startProgress = () => {
       stopProgress();
       progressInterval = setInterval(() => {
@@ -334,7 +178,7 @@ export default defineComponent({
         if (track.value && progress.value >= track.value.duration_ms) {
           stopProgress();
           console.log('Piste terminée, attente de la suivante...');
-          nextTrack();
+          handleNextTrack();
         }
       }, 1000);
     };
@@ -351,10 +195,10 @@ export default defineComponent({
       progress,
       isPlaying,
       isShuffling,
-      togglePlayPause,
-      nextTrack,
-      previousTrack,
-      toggleShuffle,
+      handleTogglePlayPause,
+      handleNextTrack,
+      handlePreviousTrack,
+      handleToggleShuffle,
     };
   },
 });
@@ -371,12 +215,12 @@ export default defineComponent({
 }
 
 .track-info {
+  margin-left: 1rem;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 16px;
 }
 
 .album-cover {
@@ -387,7 +231,10 @@ export default defineComponent({
 }
 
 .track-details {
+  height: 50%;
   flex: 1;
+  flex-shrink: 1;
+  align-content: center;
 }
 
 .track-name {
@@ -406,6 +253,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 1rem;
 }
 
 .progress-time {
@@ -436,13 +284,16 @@ export default defineComponent({
 .controls {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  width: 50%;
+
 }
 
 .main-controls {
   display: flex;
   gap: 16px;
   justify-content: center;
+  width: 50%;
+  margin: 0 auto;
 }
 
 .control-button {

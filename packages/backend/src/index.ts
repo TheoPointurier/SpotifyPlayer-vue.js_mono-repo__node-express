@@ -24,14 +24,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   session({
-    secret: 'ton_secret_pour_les_sessions',
+    secret: process.env.SESSION_SECRET || 'ton_secret_pour_les_sessions',
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   }),
 );

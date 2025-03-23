@@ -3,16 +3,17 @@
   <div class="tracks-section">
     <h3>{{ selectedPlaylist?.name || 'No Playlist Selected' }}</h3>
     <ul class="track-list">
-      <li v-for="(item, index) in tracks" :key="item.track.id" class="track-item card">
+      <li v-for="(item, index) in tracks" :key="item.track.id" class="track-item card"
+        @click="handlePlayTrack(item.track.uri)" :disabled="!isPlayerReady">
+        <button class="button-primary play-button">
+          Play
+        </button>
         <span class="track-number">{{ index + 1 }}</span>
         <img :src="item.track.album.images[2]?.url" alt="Album cover" class="track-album-cover" />
         <div class="track-info">
           <span class="track-name">{{ item.track.name }}</span>
           <span class="artist-name">{{ item.track.artists[0].name }}</span>
         </div>
-        <button class="button-primary play-button" @click="handlePlayTrack(item.track.uri)" :disabled="!isPlayerReady">
-          Play
-        </button>
       </li>
     </ul>
   </div>
@@ -20,8 +21,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { deviceId, isPlayerReady, player } from '../services/spotifyPlayerSetup';
+import { isPlayerReady } from '../services/spotifyPlayerSetup';
 import { queue, addToQueue, setCurrentTrackUri } from '../services/playbackState';
+import { playTrack } from '../services/spotifyService';
+import { ensureDeviceActive } from '../services/spotifyPlayerService';
 
 export default defineComponent({
   name: 'TrackList',
@@ -34,24 +37,20 @@ export default defineComponent({
       type: Array as () => SpotifyPlaylistTrack[],
       default: () => [],
     },
-    token: {
-      type: String,
-      required: true,
-    },
     isPlayerReady: {
       type: Boolean,
       required: true,
     },
   },
+  emits: ['update-context'],
   setup(props, { emit }) {
     const handlePlayTrack = async (trackUri: string) => {
       console.log('Attempting to play track:', trackUri);
       console.log('isPlayerReady:', isPlayerReady.value);
-      console.log('deviceId:', deviceId.value);
       console.log('Queue actuelle:', queue.value);
 
       try {
-        if (!isPlayerReady.value || !deviceId.value || !player.value) {
+        if (!isPlayerReady.value) {
           console.log('Le lecteur n’est pas prêt. Attente...');
           let attempts = 0;
           const maxAttempts = 10;
@@ -61,34 +60,19 @@ export default defineComponent({
             console.log(`Attente du lecteur... Tentative ${attempts}/${maxAttempts}`);
           }
 
-          if (!isPlayerReady.value || !deviceId.value || !player.value) {
+          if (!isPlayerReady.value) {
             throw new Error('Le lecteur n’est pas prêt après attente. Veuillez réessayer.');
           }
         }
 
-        addToQueue(trackUri);
-        setCurrentTrackUri(trackUri);
-
-        const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId.value}`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${props.token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            uris: queue.value,
-            offset: { uri: trackUri },
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Erreur lors de la définition du contexte de lecture: ${response.statusText}`);
+        const isDeviceActive = await ensureDeviceActive();
+        if (!isDeviceActive) {
+          throw new Error('Impossible d’exécuter la commande : appareil non actif');
         }
 
-        await player.value.resume().then(() => {
-          console.log('Lecture reprise avec succès via le SDK !');
-        });
-        console.log('Piste lancée avec succès via le SDK !');
+        addToQueue(trackUri);
+        setCurrentTrackUri(trackUri);
+        await playTrack(trackUri, queue.value);
 
         emit('update-context', true);
       } catch (error) {
@@ -106,9 +90,9 @@ export default defineComponent({
 
 <style scoped>
 .tracks-section {
+  height: 100%;
+  width: 100%;
   grid-column: 2 / 3;
-  max-height: 80vh;
-  overflow: scroll;
   scrollbar-width: thin;
   /* For Firefox */
   scrollbar-color: var(--spotify-white) transparent;
@@ -145,6 +129,7 @@ export default defineComponent({
 
 .track-item {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 12px;
   padding: 12px;
