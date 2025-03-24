@@ -2,29 +2,40 @@
 <template>
   <div class="side-menu">
     <img src="../assets/spotify-logo.png" alt="Spotify logo" />
-    <h1>Spotify Player</h1>
+    <h1 class="menu-title">Spotify Player</h1>
     <nav class="menu">
-      <input type="text" placeholder="Rechercher une playlist" />
+      <!-- <input type="text" placeholder="Rechercher une playlist" class="search-input" /> -->
       <ul class="menu-list">
-        <li>
-          <button class="button-primary" @click="testBackend">Tester le backend</button>
-          <p>{{ message }}</p>
+        <li v-if="isAuthenticated">
+          <i class="fas fa-user"></i>
+          <p v-if="profile" class="menu-text">Bonjour, {{ profile.display_name }}</p>
         </li>
+        <li>
+          <RouterLink to="/">
+            <i class="fas fa-home"></i>
+            <p class="menu-text">Accueil</p>
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/my-playlists">
+            <i class="fas fa-list"></i>
+            <p class="menu-text">Mes Playlists</p>
+          </RouterLink>
+        </li>
+        <!-- <li @click="testBackend" v-if="isAuthenticated">
+          <i class="fas fa-server"></i>
+          <button class="button-primary menu-text">Tester le backend</button>
+          <p class="menu-text">{{ message }}</p>
+        </li> -->
+      </ul>
+      <ul class="menu-list menu-list-bottom">
         <li @click="loginSpotify" v-if="!isAuthenticated">
-          <button class="button-primary">Connexion Spotify</button>
+          <i class="fas fa-sign-in-alt"></i>
+          <button class="button-primary menu-text">Connexion Spotify</button>
         </li>
         <li @click="logoutUser" v-if="isAuthenticated">
-          <button class="button-secondary">Déconnexion</button>
-        </li>
-        <li @click="fetchProfile" v-if="isAuthenticated">
-          <button class="button-primary">Récupérer profil</button>
-          <p v-if="profile">Bonjour, {{ profile.display_name }}</p>
-        </li>
-        <li>
-          <RouterLink to="/">Accueil</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/my-playlists">Mes Playlists</RouterLink>
+          <i class="fas fa-sign-out-alt"></i>
+          <button class="button-secondary menu-text">Déconnexion</button>
         </li>
       </ul>
     </nav>
@@ -90,35 +101,55 @@ const fetchProfile = async () => {
 
 onMounted(async () => {
   await fetchTokenOnMount();
+  if (isAuthenticated.value) {
+    await fetchProfile();
+  }
 });
 </script>
 
 <style scoped>
 .side-menu {
+  position: absolute;
+  left: 0;
   background-color: var(--spotify-dark-grey);
   height: 100%;
-  width: 100%;
+  width: 5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  transition: width 0.3s ease;
 }
 
-h1 {
+.side-menu:hover {
+  width: 10%;
+}
+
+.menu-title {
   padding: 0.5rem 2px;
   font-size: 1.2rem;
   color: var(--spotify-white);
   margin: 0;
+  margin-bottom: 2rem;
+  opacity: 0;
+  /* Caché par défaut */
+  transition: opacity 0.2s ease;
+}
+
+.side-menu:hover .menu-title {
+  opacity: 1;
+  /* Visible au survol */
 }
 
 img {
-  width: 50px;
-  margin: 0.5rem auto 0 auto;
+  width: 2rem;
+  margin: 1rem auto 0 auto;
 }
 
 .menu {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 1rem;
   padding: 0 1rem;
 }
@@ -126,26 +157,64 @@ img {
 .menu-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  gap: 2rem;
   word-break: break-all;
+  transition: word-break 0.3s ease;
 }
 
-input {
+.menu-list-bottom {
+  justify-self: end;
+}
+
+.search-input {
   padding: 0.5rem;
+  margin-bottom: 1rem;
   border: none;
   border-radius: 4px;
   background-color: var(--spotify-light-grey);
   color: var(--spotify-white);
+  opacity: 0;
+  /* Caché par défaut */
+  transition: opacity 0.2s ease;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.side-menu:hover .search-input {
+  display: block;
+  opacity: 1;
 }
 
 li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.menu-text {
+  color: var(--spotify-white);
+  text-decoration: none;
+  font-size: 1.1rem;
+  opacity: 0;
+  display: none;
+  /* Caché par défaut */
+  transition: opacity 0.5s ease;
+}
+
+.side-menu:hover .menu-text {
+  opacity: 1;
+  display: block;
+}
+
+.menu-text:hover {
+  color: var(--spotify-green);
+}
+
+/* Boutons */
+.button-primary,
+.button-secondary {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 a {

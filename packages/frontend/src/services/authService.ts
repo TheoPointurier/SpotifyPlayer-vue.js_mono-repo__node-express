@@ -15,6 +15,11 @@ export const fetchToken = async (): Promise<string> => {
     const data = await response.json();
     return data.access_token;
   } catch (error) {
+    if ((error as Error).message.includes('Non authentifié')) {
+      const customError = error as Error & { value?: string };
+      customError.value = 'Veuillez vous connecter';
+      window.location.href = '/login';
+    }
     console.error('Erreur lors de la récupération du token:', error);
     throw error;
   }
@@ -28,6 +33,7 @@ export const logout = async (): Promise<void> => {
     if (!response.ok) {
       throw new Error('Erreur lors de la déconnexion');
     }
+    window.location.href = '/login';
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
     throw error;
