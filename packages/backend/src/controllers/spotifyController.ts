@@ -53,6 +53,7 @@ export async function proxySpotifyRequest(req: Request, res: Response) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      // if(response.status === 404 &&)
       throw new Error(`Erreur lors du rafraîchissement du token: ${response.status} - ${errorText}`);
     }
 
@@ -97,6 +98,7 @@ export async function proxySpotifyRequest(req: Request, res: Response) {
       body: body ? JSON.stringify(body) : undefined,
     });
 
+    console.log('response spotify', response);
     if (!response.ok) {
       if (response.status === 401) {
         console.log('Token invalide, tentative de rafraîchissement...');
@@ -144,6 +146,13 @@ export async function proxySpotifyRequest(req: Request, res: Response) {
     if (response.status === 204) {
       console.log('Réponse 204 No Content reçue');
       res.status(204).send();
+      return;
+    }
+
+    // Gérer les réponses spécifiques à certains endpoints
+    if(response.status === 200 && response.url.includes('https://api.spotify.com/v1/me/player/shuffle')){
+      console.log('shuffle ok');
+      res.status(200).send();
       return;
     }
 
