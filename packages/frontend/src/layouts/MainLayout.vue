@@ -17,7 +17,6 @@ import { RouterView } from 'vue-router';
 <style scoped>
 .main-layout {
   height: 100%;
-  /* max-height: 1000px; */
   align-content: center;
   max-width: 1600px;
   margin: 0 auto;
@@ -38,5 +37,21 @@ import { RouterView } from 'vue-router';
   height: 100%;
   width: 100%;
   align-content: center;
+}
+
+@media screen and (max-width: 1775px) {
+  .main-layout {
+    max-width: 100%;
+  }
+
+  .side-menu {
+    width: 5vw;
+  }
+
+  .main-content,
+  .player {
+    width: 95vw;
+    justify-self: flex-end;
+  }
 }
 </style>

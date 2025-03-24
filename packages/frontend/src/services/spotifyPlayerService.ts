@@ -239,3 +239,42 @@ export const ensureDeviceActive = async (): Promise<boolean> => {
     throw error;
   }
 };
+
+export const seekToPosition = async (positionMs: number): Promise<void> => {
+  if (!deviceId.value) {
+    throw new Error('Device ID non disponible');
+  }
+
+  const isDeviceActive = await ensureDeviceActive();
+  if (!isDeviceActive) {
+    throw new Error('Impossible d’exécuter la commande : appareil non actif');
+  }
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'PUT',
+        path: `/v1/me/player/seek?device_id=${deviceId.value}&position_ms=${Math.floor(positionMs)}`,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 204) {
+        console.log(`Position changée à ${positionMs} ms`);
+        return;
+      }
+      const errorText = await response.text();
+      throw new Error(`Erreur lors du changement de position: ${response.status} - ${errorText}`);
+    }
+
+    console.log(`Position changée à ${positionMs} ms`);
+  } catch (error) {
+    console.error('Erreur lors du changement de position:', error);
+    throw error;
+  }
+};

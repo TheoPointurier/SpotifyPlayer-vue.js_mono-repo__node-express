@@ -30,6 +30,9 @@ declare namespace Spotify {
     getCurrentState(): Promise<PlaybackState | null>;
     previousTrack(): Promise<void>;
     toggleShuffle(state: boolean): Promise<void>;
+    toggleRepeat(state: boolean): Promise<void>;
+    seek(positionMs: number): Promise<void>;
+    setVolume(volume: number): Promise<void>;
     disconnect(): void;
     addListener(event: 'ready', callback: (data: { device_id: string }) => void): void;
     addListener(event: 'not_ready', callback: (data: { device_id: string }) => void): void;

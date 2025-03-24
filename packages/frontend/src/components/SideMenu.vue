@@ -118,6 +118,7 @@ onMounted(async () => {
   flex-direction: column;
   gap: 1rem;
   transition: width 0.3s ease;
+  z-index: 1;
 }
 
 .side-menu:hover {

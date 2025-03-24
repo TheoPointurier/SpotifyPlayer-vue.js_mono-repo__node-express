@@ -1,3 +1,4 @@
+<!-- src/components/SpotifyPlayer.vue -->
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
 import { player } from '../services/spotifyPlayerSetup';
@@ -9,6 +10,7 @@ import {
   nextTrack,
   previousTrack,
   toggleShuffle,
+  seekToPosition,
 } from '../services/spotifyPlayerService';
 
 export default defineComponent({
@@ -19,6 +21,9 @@ export default defineComponent({
     const duration = ref<number>(0);
     const isPlaying = ref<boolean>(false);
     const isShuffling = ref<boolean>(false);
+    const isDragging = ref<boolean>(false);
+    const volume = ref<number>(0.5);
+    let progressInterval: NodeJS.Timeout | null = null;
 
     const loadSpotifySDK = () => {
       return new Promise<void>((resolve, reject) => {
@@ -45,6 +50,28 @@ export default defineComponent({
       });
     };
 
+    const startProgress = () => {
+      stopProgress(); // S'assurer qu'il n'y a pas d'intervalle existant
+      if (!isPlaying.value) return;
+
+      progressInterval = setInterval(() => {
+        if (isDragging.value) return; // Ne pas incrémenter si l'utilisateur est en train de draguer
+        progress.value += 1000; // Incrémenter de 1 seconde (1000 ms)
+        if (track.value && progress.value >= duration.value) {
+          stopProgress();
+          console.log('Piste terminée, passage à la suivante...');
+          handleNextTrack();
+        }
+      }, 1000);
+    };
+
+    const stopProgress = () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+    };
+
     onMounted(async () => {
       try {
         await loadSpotifySDK();
@@ -53,14 +80,24 @@ export default defineComponent({
         player.value?.addListener('player_state_changed', (state) => {
           if (!state) return;
           console.log('État du lecteur mis à jour:', state);
+          console.log('Position actuelle:', state.position); // Log pour déboguer
           track.value = state.track_window.current_track;
-          progress.value = state.position;
           duration.value = state.duration;
           isPlaying.value = !state.paused;
           isShuffling.value = state.shuffle;
 
+          if (!isDragging.value) {
+            progress.value = state.position || 0;
+          }
+
           if (track.value && track.value.uri !== currentTrackUri.value) {
             setCurrentTrackUri(track.value.uri);
+          }
+
+          if (isPlaying.value) {
+            startProgress();
+          } else {
+            stopProgress();
           }
         });
       } catch (error) {
@@ -72,14 +109,14 @@ export default defineComponent({
     });
 
     onUnmounted(() => {
+      stopProgress();
       disconnectPlayer();
     });
 
     const formatDuration = (durationMs: number): string => {
       const totalSeconds = Math.floor(durationMs / 1000);
       const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60; // Calculer les secondes restantes
-      // Add 0 padding to seconds
+      const seconds = totalSeconds % 60;
       const formattedMinutes = String(minutes).padStart(2, '0');
       const formattedSeconds = String(seconds).padStart(2, '0');
       return `${formattedMinutes}:${formattedSeconds}`;
@@ -126,6 +163,41 @@ export default defineComponent({
       }
     };
 
+    const handleProgressDragStart = () => {
+      isDragging.value = true;
+    };
+
+    const handleProgressDrag = (event: Event) => {
+      if (!isDragging.value || !duration.value) return;
+      const input = event.target as HTMLInputElement;
+      const newProgress = (Number.parseFloat(input.value) / 100) * duration.value;
+      progress.value = newProgress;
+    };
+
+    const handleProgressDragEnd = async (event: Event) => {
+      if (!duration.value) return;
+      const input = event.target as HTMLInputElement;
+      const newProgress = (Number.parseFloat(input.value) / 100) * duration.value;
+      try {
+        await seekToPosition(newProgress);
+        progress.value = newProgress;
+      } catch (error) {
+        console.error('Erreur lors du seek:', error);
+        alert('Erreur lors du seek. Veuillez réessayer.');
+      } finally {
+        isDragging.value = false;
+      }
+    };
+
+    const handleVolumeChange = async () => {
+      if (!player.value) return;
+      try {
+        await player.value.setVolume(volume.value);
+      } catch (error) {
+        console.error('Erreur lors du changement de volume:', error);
+      }
+    };
+
     return {
       track,
       progress,
@@ -137,10 +209,16 @@ export default defineComponent({
       handlePreviousTrack,
       handleToggleShuffle,
       formatDuration,
+      handleProgressDragStart,
+      handleProgressDrag,
+      handleProgressDragEnd,
+      handleVolumeChange,
+      volume,
     };
   },
 });
 </script>
+
 <template>
   <div class="player card">
     <div v-if="track" class="track-info">
@@ -172,6 +250,12 @@ export default defineComponent({
       <div class="progress-container">
         <span class="progress-time">{{ formatDuration(progress) }}</span>
         <div class="progress-bar">
+          <input type="range" min="0" max="100" step="1" :value="duration ? (progress / duration) * 100 : 0"
+            @mousedown="handleProgressDragStart" @input="handleProgressDrag" @mouseup="handleProgressDragEnd"
+            @touchstart="handleProgressDragStart" @touchmove="handleProgressDrag" @touchend="handleProgressDragEnd"
+            class="progress-slider" aria-label="Progression de la lecture"
+            :aria-valuenow="duration ? (progress / duration) * 100 : 0" aria-valuemin="0" aria-valuemax="100"
+            :aria-valuetext="`${formatDuration(progress)} de ${formatDuration(duration)}`" />
           <div class="progress-fill" :style="{ width: `${duration ? (progress / duration) * 100 : 0}%` }"></div>
         </div>
         <span class="progress-time">{{ track ? formatDuration(track.duration_ms) : '00:00' }}</span>
@@ -181,9 +265,13 @@ export default defineComponent({
       <button class="control-button" title="Volume">
         <i class="fas fa-volume-up"></i>
       </button>
+      <input type="range" min="0" max="1" step="0.01" v-model="volume" @input="handleVolumeChange" aria-label="Volume"
+        :aria-valuenow="volume * 100" aria-valuemin="0" aria-valuemax="100"
+        :aria-valuetext="`${Math.round(volume * 100)}%`" />
     </div>
   </div>
 </template>
+
 <style scoped>
 .player {
   padding: 0 0.5rem;
@@ -248,12 +336,33 @@ export default defineComponent({
   background-color: var(--spotify-light-grey);
   border-radius: 2px;
   overflow: hidden;
+  position: relative;
+  /* Ajout pour position: absolute */
+}
+
+.progress-bar:hover {
+  height: 6px;
 }
 
 .progress-fill {
   height: 100%;
   background-color: var(--spotify-green);
   transition: width 0.1s linear;
+}
+
+.progress-slider {
+  position: absolute;
+  /* Remettre position: absolute */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.progress-bar:hover .progress-fill {
+  background-color: #1ed760;
 }
 
 .no-track {
@@ -266,7 +375,6 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   width: 50%;
-
 }
 
 .main-controls {

@@ -125,4 +125,15 @@ export default defineComponent({
   border-radius: 8px;
   margin-bottom: 8px;
 }
+
+@media screen and (max-width: 1105px) {
+  .playlist-button {
+    font-size: 1vmax;
+  }
+
+  .playlist-item {
+    justify-content: center;
+    width: 20vw;
+  }
+}
 </style>
