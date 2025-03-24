@@ -23,7 +23,7 @@ import { RouterView } from 'vue-router';
   margin: 0 auto;
   display: grid;
   grid-template-columns: 15% 85%;
-  grid-template-rows: 80% 20%;
+  grid-template-rows: 85% 15%;
 }
 
 .side-menu {

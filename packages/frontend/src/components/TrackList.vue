@@ -6,9 +6,9 @@
       <thead>
         <tr>
           <th class="number-title-bar">#</th>
-          <th></th> <!-- Colonne pour l'image -->
           <th>Track</th>
-          <th>Artist</th>
+          <th>Album</th>
+          <th class="timer-bar"><i class="fa-solid fa-clock"></i></th>
         </tr>
       </thead>
       <tbody>
@@ -18,11 +18,15 @@
             <p class="track-number">{{ index + 1 }}</p>
             <button class="button-primary play-button">Play</button>
           </td>
-          <td>
+          <td class="track-info">
             <img :src="item.track.album.images[2]?.url" alt="Album cover" class="track-album-cover" />
+            <div>
+              <p class="track-name">{{ item.track.name }}</p>
+              <p class="artist-name">{{ item.track.artists[0].name }}</p>
+            </div>
           </td>
-          <td class="track-name">{{ item.track.name }}</td>
-          <td class="artist-name">{{ item.track.artists[0].name }}</td>
+          <td>{{ item.track.album.name }}</td>
+          <td>{{ formatDuration(item.track.duration_ms) }}</td>
         </tr>
       </tbody>
     </table>
@@ -91,7 +95,19 @@ export default defineComponent({
       }
     };
 
+    // Fonction pour formater la durée en MM:SS
+    const formatDuration = (durationMs: number): string => {
+      const totalSeconds = Math.floor(durationMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60; // Calculer les secondes restantes
+      // Add 0 padding to seconds
+      const formattedMinutes = String(minutes).padStart(2, '0');
+      const formattedSeconds = String(seconds).padStart(2, '0');
+      return `${formattedMinutes}:${formattedSeconds}`;
+    };
+
     return {
+      formatDuration,
       handlePlayTrack,
     };
   },
@@ -160,7 +176,8 @@ export default defineComponent({
   pointer-events: none;
 }
 
-.track-table .number-title-bar {
+.track-table .number-title-bar,
+.track-table .timer-bar {
   text-align: center;
 }
 
@@ -174,6 +191,11 @@ export default defineComponent({
 
 .track-number-container {
   width: 5rem;
+}
+
+.track-info {
+  display: flex;
+  gap: 1rem;
 }
 
 .track-album-cover {
