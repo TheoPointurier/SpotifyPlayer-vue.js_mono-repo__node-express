@@ -1,6 +1,4 @@
 import { deviceId } from "./spotifyPlayerSetup";
-
-// src/services/spotifyService.ts
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const login = () => {

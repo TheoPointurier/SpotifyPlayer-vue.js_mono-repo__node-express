@@ -33,7 +33,7 @@ import { RouterView } from 'vue-router';
 }
 
 .main-content {
-  grid-column: 2 / 3;
+  grid-column: 1 / 3;
   grid-row: 1 / 2;
   height: 100%;
   width: 100%;

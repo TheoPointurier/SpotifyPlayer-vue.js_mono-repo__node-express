@@ -1,7 +1,7 @@
 <!-- src/components/PlaylistSelector.vue -->
 <template>
   <div class="playlist-selector">
-    <h2>Mes Playlists</h2>
+    <h2 class="playlist-selector__title">Mes Playlists</h2>
     <section class="playlists-section">
       <ul class="playlist-list">
         <li v-for="playlist in playlists" :key="playlist.id" class="playlist-item card"
@@ -52,49 +52,60 @@ export default defineComponent({
   width: 100%;
   grid-column: 1 / 2;
   scrollbar-width: thin;
-  /* For Firefox */
-  scrollbar-color: var(--spotify-white) transparent;
-  /* For Firefox */
-
-  &::-webkit-scrollbar {
-    width: 8px;
-    /* For WebKit browsers */
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--spotify-white);
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  scrollbar-color: auto;
+  background-color: var(--spotify-dark-grey);
   overflow-y: scroll;
-
-  &:not(:hover)::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    /* Hide scrollbar thumb when not hovering */
-  }
-
 }
 
-.playlist-list {
-  gap: 16px;
+.playlist-selector::-webkit-scrollbar {
+  width: 8px;
+  /* For WebKit browsers */
+}
+
+.playlist-selector::-webkit-scrollbar-thumb {
+  background-color: var(--spotify-white);
+  border-radius: 4px;
+}
+
+.playlist-selector::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.playlist-selector:not(:hover)::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  /* Hide scrollbar thumb when not hovering */
+}
+
+.playlist-selector__title {
+  padding: 0.5rem;
+  position: sticky;
+  top: 0;
+  background-color: var(--spotify-dark-grey);
+  transition: opacity 0.3s;
+  opacity: 1;
+}
+
+.playlist-selector:has(:hover) .playlist-selector__title {
+  opacity: 0.8;
 }
 
 
 .playlists-section {
   display: flex;
   flex-direction: column;
+  padding: 0 0.5rem;
 }
 
 .playlist-item {
   padding: 12px;
-  margin-bottom: 0.5rem;
+  /* margin-bottom: 0.5rem; */
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   align-items: center;
+}
+
+.playlist-item:hover {
+  cursor: pointer;
 }
 
 .playlist-button {
@@ -103,14 +114,12 @@ export default defineComponent({
   color: var(--spotify-white);
   font-size: 16px;
   font-weight: 500;
-  text-align: center;
+  text-align: left;
   width: 100%;
-  cursor: pointer;
 }
 
 .playlist-cover {
-  width: 100%;
-  height: 150px;
+  height: 4.5rem;
   object-fit: cover;
   flex-shrink: 1;
   border-radius: 8px;

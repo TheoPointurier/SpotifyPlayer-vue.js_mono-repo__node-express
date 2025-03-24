@@ -1,4 +1,3 @@
-// src/services/playbackState.ts
 import { ref } from 'vue';
 
 // File d'attente locale

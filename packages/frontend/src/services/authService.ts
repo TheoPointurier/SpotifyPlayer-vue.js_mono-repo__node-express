@@ -1,4 +1,3 @@
-// src/services/authService.ts
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const fetchToken = async (): Promise<string> => {

@@ -1,4 +1,3 @@
-// src/services/spotifyPlayerService.ts
 import { player, deviceId, isPlayerReady } from './spotifyPlayerSetup';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;

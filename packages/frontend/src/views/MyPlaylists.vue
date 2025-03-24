@@ -84,14 +84,15 @@ onMounted(async () => {
 }
 
 .content {
-  padding: 2rem;
   height: 100%;
 }
 
 h1 {
   font-size: 2rem;
   color: var(--spotify-white);
-  margin-bottom: 1rem;
+  height: 10%;
+  margin: 0;
+  align-content: center;
 }
 
 .container-player {
@@ -100,7 +101,7 @@ h1 {
   grid-template-columns: 20% 80%;
   margin: 0 auto;
   width: 100%;
-  height: 93%;
+  height: 90%;
 }
 
 .tracks-section {
