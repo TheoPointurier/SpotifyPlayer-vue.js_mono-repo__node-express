@@ -3,6 +3,7 @@
 // Déclaration du namespace Spotify pour le SDK
 declare namespace Spotify {
   interface PlaybackState {
+    duration: number;
     track_window: {
       current_track: {
         name: string;

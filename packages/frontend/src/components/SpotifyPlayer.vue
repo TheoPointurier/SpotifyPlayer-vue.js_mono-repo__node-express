@@ -1,50 +1,3 @@
-<!-- src/components/SpotifyPlayer.vue -->
-<template>
-  <div class="player card">
-    <div v-if="track" class="track-info">
-      <img :src="track.album.images[0]?.url" alt="Album cover" class="album-cover" />
-      <div class="track-details">
-        <p class="track-name">{{ track.name }}</p>
-        <p class="artist-name">{{ track.artists[0].name }}</p>
-      </div>
-    </div>
-    <div v-else class="no-track">No track playing</div>
-    <div class="controls">
-      <div class="main-controls">
-        <button class="control-button" title="Repeat">
-          <i class="fas fa-redo"></i>
-        </button>
-        <button class="control-button" @click="handlePreviousTrack" title="Previous">
-          <i class="fas fa-backward"></i>
-        </button>
-        <button class="control-button play-pause" @click="handleTogglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
-          <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
-        </button>
-        <button class="control-button" @click="handleNextTrack" title="Next">
-          <i class="fas fa-forward"></i>
-        </button>
-        <button class="control-button" @click="handleToggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
-          <i class="fas fa-shuffle"></i>
-        </button>
-      </div>
-      <div class="progress-container">
-        <span class="progress-time">{{ Math.floor(progress / 1000) }}</span>
-        <div class="progress-bar">
-          <div class="progress-fill"
-            :style="{ width: `${track && track.duration_ms ? (progress / track.duration_ms) * 100 : 0}%` }"></div>
-        </div>
-        <span class="progress-time">{{ track && track.duration_ms ? Math.floor(track.duration_ms / 1000) + 'sec' :
-          '0sec' }}</span>
-      </div>
-    </div>
-    <div class="other-controls">
-      <button class="control-button" title="Volume">
-        <i class="fas fa-volume-up"></i>
-      </button>
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
 import { player } from '../services/spotifyPlayerSetup';
@@ -63,9 +16,9 @@ export default defineComponent({
   setup() {
     const track = ref<Spotify.PlaybackState['track_window']['current_track'] | null>(null);
     const progress = ref<number>(0);
+    const duration = ref<number>(0);
     const isPlaying = ref<boolean>(false);
     const isShuffling = ref<boolean>(false);
-    let progressInterval: NodeJS.Timeout | null = null;
 
     const loadSpotifySDK = () => {
       return new Promise<void>((resolve, reject) => {
@@ -102,19 +55,12 @@ export default defineComponent({
           console.log('État du lecteur mis à jour:', state);
           track.value = state.track_window.current_track;
           progress.value = state.position;
+          duration.value = state.duration;
           isPlaying.value = !state.paused;
           isShuffling.value = state.shuffle;
 
           if (track.value && track.value.uri !== currentTrackUri.value) {
             setCurrentTrackUri(track.value.uri);
-          }
-
-          if (isPlaying.value) {
-            console.log('Lecture démarrée !');
-            startProgress();
-          } else {
-            console.log('Lecture mise en pause.');
-            stopProgress();
           }
         });
       } catch (error) {
@@ -126,9 +72,18 @@ export default defineComponent({
     });
 
     onUnmounted(() => {
-      stopProgress();
       disconnectPlayer();
     });
+
+    const formatDuration = (durationMs: number): string => {
+      const totalSeconds = Math.floor(durationMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60; // Calculer les secondes restantes
+      // Add 0 padding to seconds
+      const formattedMinutes = String(minutes).padStart(2, '0');
+      const formattedSeconds = String(seconds).padStart(2, '0');
+      return `${formattedMinutes}:${formattedSeconds}`;
+    };
 
     const handleTogglePlayPause = async () => {
       try {
@@ -171,38 +126,64 @@ export default defineComponent({
       }
     };
 
-    const startProgress = () => {
-      stopProgress();
-      progressInterval = setInterval(() => {
-        progress.value += 1000;
-        if (track.value && progress.value >= track.value.duration_ms) {
-          stopProgress();
-          console.log('Piste terminée, attente de la suivante...');
-          handleNextTrack();
-        }
-      }, 1000);
-    };
-
-    const stopProgress = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-    };
-
     return {
       track,
       progress,
+      duration,
       isPlaying,
       isShuffling,
       handleTogglePlayPause,
       handleNextTrack,
       handlePreviousTrack,
       handleToggleShuffle,
+      formatDuration,
     };
   },
 });
 </script>
+<template>
+  <div class="player card">
+    <div v-if="track" class="track-info">
+      <img :src="track.album.images[0]?.url" alt="Album cover" class="album-cover" />
+      <div class="track-details">
+        <p class="track-name">{{ track.name }}</p>
+        <p class="artist-name">{{ track.artists[0].name }}</p>
+      </div>
+    </div>
+    <div v-else class="no-track">No track playing</div>
+    <div class="controls">
+      <div class="main-controls">
+        <button class="control-button" title="Repeat">
+          <i class="fas fa-redo"></i>
+        </button>
+        <button class="control-button" @click="handlePreviousTrack" title="Previous">
+          <i class="fas fa-backward"></i>
+        </button>
+        <button class="control-button play-pause" @click="handleTogglePlayPause" :title="isPlaying ? 'Pause' : 'Play'">
+          <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+        </button>
+        <button class="control-button" @click="handleNextTrack" title="Next">
+          <i class="fas fa-forward"></i>
+        </button>
+        <button class="control-button" @click="handleToggleShuffle" :class="{ active: isShuffling }" title="Shuffle">
+          <i class="fas fa-shuffle"></i>
+        </button>
+      </div>
+      <div class="progress-container">
+        <span class="progress-time">{{ formatDuration(progress) }}</span>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: `${duration ? (progress / duration) * 100 : 0}%` }"></div>
+        </div>
+        <span class="progress-time">{{ track ? formatDuration(track.duration_ms) : '00:00' }}</span>
+      </div>
+    </div>
+    <div class="other-controls">
+      <button class="control-button" title="Volume">
+        <i class="fas fa-volume-up"></i>
+      </button>
+    </div>
+  </div>
+</template>
 <style scoped>
 .player {
   padding: 0 0.5rem;
