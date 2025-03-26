@@ -1,10 +1,15 @@
 <!-- src/components/SideMenu.vue -->
 <template>
   <div class="side-menu">
-    <img src="../assets/spotify-logo.png" alt="Spotify logo" />
+    <img src="../assets/spotify-logo.png" alt="Spotify logo" class="logo" />
     <h1 class="menu-title">Spotify Player</h1>
-    <nav class="menu">
-      <!-- <input type="text" placeholder="Rechercher une playlist" class="search-input" /> -->
+    <!-- Bouton burger visible uniquement en mobile -->
+    <button class="burger-button" @click="toggleMenu" v-if="isMobile">
+      <i :class="isMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+    </button>
+    <div class="overlay" v-if="isMenuOpen && isMobile" @click="toggleMenu"></div>
+    <!-- Menu principal -->
+    <nav class="menu" :class="{ 'menu-open': isMenuOpen && isMobile }">
       <ul class="menu-list">
         <li v-if="isAuthenticated" class="profile-text">
           <i class="fas fa-user"></i>
@@ -22,11 +27,6 @@
             <p class="menu-text">Mes Playlists</p>
           </RouterLink>
         </li>
-        <!-- <li @click="testBackend" v-if="isAuthenticated">
-          <i class="fas fa-server"></i>
-          <button class="button-primary menu-text">Tester le backend</button>
-          <p class="menu-text">{{ message }}</p>
-        </li> -->
       </ul>
       <ul class="menu-list menu-list-bottom">
         <li @click="loginSpotify" v-if="!isAuthenticated">
@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { fetchToken, logout, getProfile } from '../services/authService';
 import { login } from '../services/spotifyService';
@@ -52,6 +52,10 @@ const message = ref('');
 const APIURL = import.meta.env.VITE_BASE_URL;
 const isAuthenticated = ref<boolean>(false);
 const profile = ref<SpotifyProfile | null>(null);
+const isMenuOpen = ref(false);
+
+// Detect if the user is on mobile
+const isMobile = computed(() => window.innerWidth <= 768);
 
 const fetchTokenOnMount = async () => {
   try {
@@ -63,19 +67,9 @@ const fetchTokenOnMount = async () => {
   }
 };
 
-const testBackend = async () => {
-  try {
-    const response = await fetch(`${APIURL}/api/test`);
-    const data = await response.json();
-    message.value = data.message;
-  } catch (error) {
-    console.error('Erreur lors du test du backend:', error);
-    message.value = 'Erreur lors du test du backend';
-  }
-};
-
 const loginSpotify = () => {
   login();
+  isMenuOpen.value = false; // Close the menu after login
 };
 
 const logoutUser = async () => {
@@ -83,6 +77,7 @@ const logoutUser = async () => {
     await logout();
     isAuthenticated.value = false;
     profile.value = null;
+    isMenuOpen.value = false; // Close the menu after logout
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
   }
@@ -99,11 +94,19 @@ const fetchProfile = async () => {
   }
 };
 
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+};
+
+// Fetch the token and profile on mount / Add event listener for window resize
 onMounted(async () => {
   await fetchTokenOnMount();
   if (isAuthenticated.value) {
     await fetchProfile();
   }
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) isMenuOpen.value = false;
+  });
 });
 </script>
 
@@ -132,16 +135,14 @@ onMounted(async () => {
   margin: 0;
   margin-bottom: 2rem;
   opacity: 0;
-  /* Caché par défaut */
   transition: opacity 0.2s ease;
 }
 
 .side-menu:hover .menu-title {
   opacity: 1;
-  /* Visible au survol */
 }
 
-img {
+.logo {
   width: 2rem;
   margin: 1rem auto 0 auto;
 }
@@ -161,33 +162,10 @@ img {
   align-items: center;
   width: 100%;
   gap: 2rem;
-  word-break: break-all;
-  transition: word-break 0.3s ease;
 }
 
 .menu-list-bottom {
   justify-self: end;
-}
-
-.search-input {
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--spotify-light-grey);
-  color: var(--spotify-white);
-  opacity: 0;
-  /* Caché par défaut */
-  transition: opacity 0.2s ease;
-}
-
-.side-menu:hover .search-input {
-  display: block;
-  opacity: 1;
-}
-
-li {
-  margin-bottom: 1rem;
 }
 
 .menu-text {
@@ -196,7 +174,6 @@ li {
   font-size: 1.1rem;
   opacity: 0;
   display: none;
-  /* Caché par défaut */
   transition: opacity 0.5s ease;
 }
 
@@ -209,7 +186,6 @@ li {
   color: var(--spotify-green);
 }
 
-/* Boutons */
 .button-primary,
 .button-secondary {
   padding: 0.5rem;
@@ -228,22 +204,56 @@ a:hover {
   color: var(--spotify-green);
 }
 
+.burger-button {
+  background: none;
+  border: none;
+  color: var(--spotify-white);
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0;
+  z-index: 10000;
+}
+
+.burger-button:hover {
+  color: var(--spotify-green);
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
 @media screen and (max-width: 768px) {
   .side-menu {
     position: initial;
     flex-direction: row;
+    width: 100%;
+    height: 100%;
+    max-height: 8dvh;
+    /* Correspond à MainLayout */
     gap: 0;
+    padding: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
   }
 
   .side-menu:hover {
     width: 100%;
   }
 
-  img {
-    width: 2rem;
-    height: 2rem;
-    align-self: center;
-    margin: 0 0 0 0.5rem;
+  .logo {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
   }
 
   .menu-title {
@@ -251,36 +261,48 @@ a:hover {
   }
 
   .menu {
-    flex-direction: row;
-    gap: 0;
-    padding: 0;
-    align-items: center;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    /* Caché par défaut */
+    width: 70%;
+    /* Largeur du menu ouvert */
+    height: 100dvh;
+    /* Toute la hauteur de l’écran */
+    background-color: var(--spotify-dark-grey);
+    flex-direction: column;
+    padding: 2rem 1rem;
+    transition: right 0.3s ease;
+    /* Animation pour l’ouverture */
+    z-index: 2;
+  }
+
+  .menu.menu-open {
+    right: 0;
+    /* Menu visible */
   }
 
   .menu-list {
-    flex-direction: row;
-    gap: 0;
-    width: 100%;
-    align-items: center;
-    justify-content: space-evenly;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    align-items: flex-start;
   }
 
   .menu-list-bottom {
-    justify-content: flex-end;
-    padding-right: 1rem;
+    padding-right: 0;
+    margin-top: auto;
+    /* Pousse les éléments en bas */
   }
 
-  li {
-    align-items: center;
-    margin: 0;
+  .menu-text {
+    display: block;
+    /* Toujours visible dans le menu ouvert */
+    opacity: 1;
   }
 
-  .profile-text {
-    display: none;
-  }
-
-  .side-menu:hover .menu-text {
-    display: none;
+  .burger-button:hover {
+    color: var(--spotify-green);
   }
 }
 </style>

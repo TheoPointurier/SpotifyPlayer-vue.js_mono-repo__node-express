@@ -28,7 +28,6 @@ import { RouterView } from 'vue-router';
 .side-menu {
   grid-column: 1 / 2;
   grid-row: 1 / 2;
-  /* Le SideMenu s'étend sur toute la hauteur */
 }
 
 .main-content {
@@ -38,7 +37,6 @@ import { RouterView } from 'vue-router';
   width: 100%;
   align-content: center;
 }
-
 
 @media screen and (max-width: 1775px) {
   .main-layout {
@@ -60,26 +58,37 @@ import { RouterView } from 'vue-router';
   .main-layout {
     height: 100dvh;
     width: 100dvw;
-    grid-template-rows: 80% 10% 10%;
+    display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: 80% 12% 8%;
+    overflow: hidden;
   }
 
   .side-menu {
     grid-row: 3 / 4;
     grid-column: 1 / 2;
     width: 100%;
+    height: 100%;
+    max-height: 8dvh;
   }
 
   .main-content {
     grid-row: 1 / 2;
     grid-column: 1 / 2;
     width: 100%;
+    height: 100%;
+    max-height: 80dvh;
+    overflow-y: auto;
   }
 
   .player {
     grid-row: 2 / 3;
     grid-column: 1 / 2;
+    width: 100%;
+    height: 100%;
+    flex-direction: row;
+    max-height: 12dvh;
+    max-width: 100dvw;
   }
-
 }
 </style>

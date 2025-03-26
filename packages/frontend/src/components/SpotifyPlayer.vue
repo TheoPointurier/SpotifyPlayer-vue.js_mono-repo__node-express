@@ -220,7 +220,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="player card">
+  <div class="player">
     <div v-if="track" class="track-info">
       <img :src="track.album.images[0]?.url" alt="Album cover" class="album-cover" />
       <div class="track-details">
@@ -336,8 +336,7 @@ export default defineComponent({
   background-color: var(--spotify-light-grey);
   border-radius: 2px;
   overflow: hidden;
-  position: relative;
-  /* Ajout pour position: absolute */
+  position: relative
 }
 
 .progress-bar:hover {
@@ -352,7 +351,6 @@ export default defineComponent({
 
 .progress-slider {
   position: absolute;
-  /* Remettre position: absolute */
   top: 0;
   left: 0;
   width: 100%;
@@ -414,5 +412,88 @@ export default defineComponent({
 
 .play-pause:hover {
   background-color: #1ed760;
+}
+
+@media screen and (max-width: 768px) {
+  .player {
+    height: 100%;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .track-info {
+    margin-left: 0;
+  }
+
+  .track-details {
+    display: none;
+  }
+
+  .album-cover {
+    width: 100%;
+    height: 100%;
+  }
+
+  .controls {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 5px;
+  }
+
+  .main-controls {
+    width: auto;
+    gap: 8px;
+  }
+
+  .control-button {
+    font-size: 16px;
+  }
+
+  .play-pause {
+    width: 32px;
+    height: 32px;
+  }
+
+  .progress-container {
+    margin-top: 0;
+    flex: 1;
+    max-width: 50%;
+  }
+
+  .progress-time {
+    font-size: 10px;
+  }
+
+  .progress-bar {
+    width: 10rem;
+  }
+
+  .other-controls {
+    width: auto;
+    display: none;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .other-controls input[type="range"] {
+    width: 50px;
+  }
+
+  .track-info {
+    width: 100%;
+    height: auto;
+  }
+
+  .no-track {
+    font-size: 50%;
+  }
 }
 </style>
