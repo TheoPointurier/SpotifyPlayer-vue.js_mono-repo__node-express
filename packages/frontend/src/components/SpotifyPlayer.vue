@@ -445,7 +445,7 @@ export default defineComponent({
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
-    padding-top: 5px;
+    padding-top: 21px;
   }
 
   .main-controls {
@@ -465,7 +465,7 @@ export default defineComponent({
   .progress-container {
     margin-top: 0;
     flex: 1;
-    max-width: 50%;
+    max-width: 79%;
   }
 
   .progress-time {

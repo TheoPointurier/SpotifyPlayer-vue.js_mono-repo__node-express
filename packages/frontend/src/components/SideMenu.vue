@@ -18,13 +18,13 @@
           <p v-if="profile" class="menu-text">Bonjour, {{ profile.display_name }}</p>
         </li>
         <li>
-          <RouterLink to="/">
+          <RouterLink to="/" @click="toggleMenu">
             <i class="fas fa-home"></i>
             <p class="menu-text">Accueil</p>
           </RouterLink>
         </li>
         <li>
-          <RouterLink to="/my-playlists">
+          <RouterLink to="/my-playlists" @click="toggleMenu">
             <i class="fas fa-list"></i>
             <p class="menu-text">Mes Playlists</p>
           </RouterLink>
@@ -214,7 +214,7 @@ a:hover {
   cursor: pointer;
   position: absolute;
   right: 0.5rem;
-  bottom: 0;
+  bottom: 0.5rem;
   z-index: 10000;
 }
 
