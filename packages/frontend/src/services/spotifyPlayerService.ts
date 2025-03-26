@@ -278,3 +278,46 @@ export const seekToPosition = async (positionMs: number): Promise<void> => {
     throw error;
   }
 };
+
+export const toggleRepeatMode = async (currentRepeatState: string): Promise<string> => {
+  if (!player.value) {
+    throw new Error('Player non initialisé');
+  }
+
+  const isDeviceActive = await ensureDeviceActive();
+  if (!isDeviceActive) {
+    throw new Error('Impossible d’exécuter la commande : appareil non actif');
+  }
+
+  try {
+    // Cycle through repeat states: off -> context -> track -> off
+    const newRepeatState = currentRepeatState === 'off' ? 'context' : currentRepeatState === 'context' ? 'track' : 'off';
+
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'PUT',
+        path: `/v1/me/player/repeat?state=${newRepeatState}&device_id=${deviceId.value}`,
+      }),
+    });
+
+    if(!response.ok) {
+      if (response.status === 204) {
+        console.log(`Mode de répétition changé à ${newRepeatState}`);
+        return newRepeatState;
+      }
+      const errorText = await response.text();
+      throw new Error(`Erreur lors du changement du mode de répétition: ${response.status} - ${errorText}`);
+    }
+    console.log(`Mode de répétition changé à ${newRepeatState} via API`);
+    return newRepeatState;
+    
+  } catch (error) {
+    console.error('Erreur lors du changement du mode de répétition:', error);
+    throw error;
+  }
+};

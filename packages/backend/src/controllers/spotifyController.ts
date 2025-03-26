@@ -160,6 +160,11 @@ export async function proxySpotifyRequest(req: Request, res: Response) {
       res.status(200).send();
       return;
     }
+    if(response.status === 200 && response.url.includes('https://api.spotify.com/v1/me/player/repeat')){
+      console.log('repeat ok');
+      res.status(200).send();
+      return;
+    }
 
     // Parser la réponse en JSON uniquement si elle contient un corps
     const data = await response.json();

@@ -16,6 +16,7 @@ declare namespace Spotify {
     position: number;
     paused: boolean;
     shuffle: boolean;
+    repeat_mode: number;
   }
 
   class Player {

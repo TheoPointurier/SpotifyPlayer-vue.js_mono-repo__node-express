@@ -1,4 +1,3 @@
-<!-- src/components/SpotifyPlayer.vue -->
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
 import { player } from '../services/spotifyPlayerSetup';
@@ -11,6 +10,7 @@ import {
   previousTrack,
   toggleShuffle,
   seekToPosition,
+  toggleRepeatMode,
 } from '../services/spotifyPlayerService';
 
 export default defineComponent({
@@ -21,6 +21,7 @@ export default defineComponent({
     const duration = ref<number>(0);
     const isPlaying = ref<boolean>(false);
     const isShuffling = ref<boolean>(false);
+    const isRepeating = ref<string>('off');
     const isDragging = ref<boolean>(false);
     const volume = ref<number>(0.5);
     let progressInterval: NodeJS.Timeout | null = null;
@@ -85,6 +86,7 @@ export default defineComponent({
           duration.value = state.duration;
           isPlaying.value = !state.paused;
           isShuffling.value = state.shuffle;
+          isRepeating.value = state.repeat_mode === 0 ? 'off' : state.repeat_mode === 1 ? 'context' : 'track';
 
           if (!isDragging.value) {
             progress.value = state.position || 0;
@@ -163,6 +165,15 @@ export default defineComponent({
       }
     };
 
+    const handleToggleRepeat = async () => {
+      try {
+        const newRepeatState = await toggleRepeatMode(isRepeating.value);
+        isRepeating.value = newRepeatState;
+      } catch (error) {
+        console.error('Erreur lors de toggleRepeat:', error);
+      }
+    };
+
     const handleProgressDragStart = () => {
       isDragging.value = true;
     };
@@ -204,10 +215,12 @@ export default defineComponent({
       duration,
       isPlaying,
       isShuffling,
+      isRepeating,
       handleTogglePlayPause,
       handleNextTrack,
       handlePreviousTrack,
       handleToggleShuffle,
+      handleToggleRepeat,
       formatDuration,
       handleProgressDragStart,
       handleProgressDrag,
@@ -231,8 +244,10 @@ export default defineComponent({
     <div v-else class="no-track">No track playing</div>
     <div class="controls">
       <div class="main-controls">
-        <button class="control-button" title="Repeat">
+        <button class="control-button control-button-repeat" @click="handleToggleRepeat"
+          :class="{ active: isRepeating !== 'off' }" :title="`Repeat: ${isRepeating}`">
           <i class="fas fa-redo"></i>
+          <span v-if="isRepeating === 'track'" class="repeat-mode">1</span>
         </button>
         <button class="control-button" @click="handlePreviousTrack" title="Previous">
           <i class="fas fa-backward"></i>
@@ -392,6 +407,10 @@ export default defineComponent({
   transition: color 0.2s ease;
 }
 
+.control-button-repeat {
+  position: relative;
+}
+
 .control-button:hover {
   color: var(--spotify-green);
 }
@@ -412,6 +431,13 @@ export default defineComponent({
 
 .play-pause:hover {
   background-color: #1ed760;
+}
+
+.repeat-mode {
+  font-size: 10px;
+  position: absolute;
+  top: 0;
+  left: 1;
 }
 
 @media screen and (max-width: 768px) {
@@ -455,6 +481,23 @@ export default defineComponent({
 
   .control-button {
     font-size: 16px;
+  }
+
+  .control-button:hover {
+    color: var(--spotify-white);
+  }
+
+  .control-button:focus {
+    color: var(--spotify-white);
+    outline: none;
+  }
+
+  .control-button.active {
+    color: var(--spotify-green);
+  }
+
+  .control-button.active:focus {
+    color: var(--spotify-green);
   }
 
   .play-pause {
