@@ -40,6 +40,7 @@ declare namespace Spotify {
     addListener(event: 'player_state_changed', callback: (state: PlaybackState | null) => void): void;
     pause(): Promise<void>;
     resume(): Promise<void>;
+    
   }
 }
 
