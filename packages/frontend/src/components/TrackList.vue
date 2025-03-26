@@ -119,6 +119,8 @@ export default defineComponent({
   height: 100%;
   width: 100%;
   grid-column: 2 / 3;
+  text-align: center;
+  color: var(--spotify-light-grey);
   scrollbar-width: thin;
   scrollbar-color: var(--spotify-white) transparent;
 
@@ -236,5 +238,69 @@ export default defineComponent({
 
 .track-item:hover .track-name {
   color: var(--spotify-green);
+}
+
+@media screen and (max-width: 768px) {
+  .tracks-section {
+    grid-column: 1/2;
+    grid-row: 2/3;
+    width: 100dvw;
+    overflow-x: hidden;
+
+  }
+
+  .tracks-section h3 {
+    margin-top: 0.5rem;
+  }
+
+  .track-table {
+    width: 100%;
+    table-layout: fixed;
+
+  }
+
+  /* Masquer les colonnes # et Album */
+  .track-table .number-title-bar,
+  .track-table th:nth-child(3),
+  /* Album */
+  .track-table td:nth-child(1),
+  /* # */
+  .track-table td:nth-child(3)
+
+  /* Album */
+    {
+    display: none;
+  }
+
+  .track-table th,
+  .track-table td {
+    padding: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .track-info {
+    width: 80%;
+    gap: 0.5rem;
+  }
+
+  .track-info img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .track-info .track-name,
+  .track-info .artist-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .track-table .timer-bar,
+  .track-table td:nth-child(4) {
+    width: 20%;
+    text-align: center;
+  }
 }
 </style>

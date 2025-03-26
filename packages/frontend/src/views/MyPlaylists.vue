@@ -104,15 +104,17 @@ h1 {
   height: 90%;
 }
 
-.tracks-section {
-  grid-column: 2 / 3;
-  text-align: center;
-  color: var(--spotify-light-grey);
-}
-
 .error-message {
   color: red;
   text-align: center;
   margin-top: 1rem;
+}
+
+@media screen and (max-width: 768px) {
+
+  .container-player {
+    grid-template-columns: 1fr;
+    grid-template-rows: 20% 80%;
+  }
 }
 </style>

@@ -1,7 +1,9 @@
 <!-- src/components/SideMenu.vue -->
 <template>
   <div class="side-menu">
-    <img src="../assets/spotify-logo.png" alt="Spotify logo" class="logo" />
+    <RouterLink to="/">
+      <img src="../assets/spotify-logo.png" alt="Spotify logo" class="logo" />
+    </RouterLink>
     <h1 class="menu-title">Spotify Player</h1>
     <!-- Bouton burger visible uniquement en mobile -->
     <button class="burger-button" @click="toggleMenu" v-if="isMobile">
@@ -254,6 +256,7 @@ a:hover {
     width: 1.5rem;
     height: 1.5rem;
     margin: 0;
+    margin-left: 1rem;
   }
 
   .menu-title {
@@ -264,40 +267,38 @@ a:hover {
     position: fixed;
     top: 0;
     right: -100%;
-    /* Caché par défaut */
     width: 70%;
-    /* Largeur du menu ouvert */
     height: 100dvh;
-    /* Toute la hauteur de l’écran */
     background-color: var(--spotify-dark-grey);
     flex-direction: column;
     padding: 2rem 1rem;
     transition: right 0.3s ease;
-    /* Animation pour l’ouverture */
     z-index: 2;
   }
 
   .menu.menu-open {
     right: 0;
-    /* Menu visible */
   }
 
   .menu-list {
     flex-direction: column;
     gap: 1.5rem;
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: center;
+  }
+
+  .profile-text {
+    margin-bottom: 2rem;
   }
 
   .menu-list-bottom {
     padding-right: 0;
     margin-top: auto;
-    /* Pousse les éléments en bas */
+    margin-bottom: 4rem;
   }
 
   .menu-text {
     display: block;
-    /* Toujours visible dans le menu ouvert */
     opacity: 1;
   }
 

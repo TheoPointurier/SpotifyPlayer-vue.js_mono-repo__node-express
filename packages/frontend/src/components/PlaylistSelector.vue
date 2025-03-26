@@ -136,4 +136,55 @@ export default defineComponent({
     width: 20vw;
   }
 }
+
+@media screen and (max-width: 768px) {
+  .playlist-selector {
+    height: 100%;
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    overflow-y: hidden;
+    overflow-x: scroll;
+  }
+
+  .playlist-selector__title {
+    display: none;
+  }
+
+  .playlists-section {
+    flex-direction: row;
+    height: 100%;
+    padding: 0;
+    margin: 0 0.5rem;
+  }
+
+  .playlist-list {
+    display: flex;
+    flex-direction: row;
+    width: auto;
+    height: 100%;
+    gap: 1rem;
+  }
+
+  .playlist-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 8rem;
+    padding: 0;
+  }
+
+  .playlist-button {
+    text-align: center;
+    font-size: 70%;
+    width: 100%;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .playlist-cover {
+    margin-bottom: 0;
+  }
+}
 </style>
