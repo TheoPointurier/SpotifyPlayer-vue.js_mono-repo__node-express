@@ -62,12 +62,12 @@ export async function callback(
       return;
     }
 
-    if (req.session) {
+    // if (req.session) {
       req.session.accessToken = data.access_token;
       req.session.refreshToken = data.refresh_token;
       req.session.expiresIn = data.expires_in;
       req.session.expiresAt = Date.now() + data.expires_in * 1000;
-    }
+    // }
     console.log('Session:', req.session);
 
     // res.cookie('access_token', data.access_token, {
