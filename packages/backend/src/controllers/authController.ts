@@ -1,7 +1,7 @@
 // src/controllers/authController.ts
 import type { Request, Response } from 'express';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:4173';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://theopointurier.com/spotify-app';
 
 export function login(
   req: Request,
