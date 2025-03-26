@@ -19,7 +19,6 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -35,6 +34,7 @@ app.use(
     },
   }),
 );
+app.use(cors(corsOptions));
 
 // Routes
 app.use('/api', spotifyRouter);
