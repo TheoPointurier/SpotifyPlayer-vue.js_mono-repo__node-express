@@ -85,14 +85,20 @@ export const playTrack = async (trackUri: string, queue: string[]): Promise<void
 
     if (!response.ok) {
       if (response.status === 204) {
-        console.log('Piste jouée avec succès:', trackUri);
+        console.log(
+          'Piste jouée avec succès:', 
+          // trackUri
+        );
         return;
       }
       const errorText = await response.text();
       throw new Error(`Erreur lors de la lecture de la piste: ${response.status} - ${errorText}`);
     }
 
-    console.log('Piste jouée avec succès:', trackUri);
+    console.log(
+      'Piste jouée avec succès:', 
+      // trackUri
+    );
   } catch (error) {
     console.error('Erreur lors de la lecture de la piste:', error);
     throw error;

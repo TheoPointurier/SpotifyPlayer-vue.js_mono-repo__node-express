@@ -80,8 +80,8 @@ export default defineComponent({
 
         player.value?.addListener('player_state_changed', (state) => {
           if (!state) return;
-          console.log('État du lecteur mis à jour:', state);
-          console.log('Position actuelle:', state.position); // Log pour déboguer
+          // console.log('État du lecteur mis à jour:', state);
+          // console.log('Position actuelle:', state.position); 
           track.value = state.track_window.current_track;
           duration.value = state.duration;
           isPlaying.value = !state.paused;

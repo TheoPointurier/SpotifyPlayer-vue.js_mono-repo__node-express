@@ -2,16 +2,12 @@
 <template>
   <div class="home-page">
     <h1>Bienvenue sur Spotify Player</h1>
-    <p>Ceci est une page d'accueil temporaire. Ajoutez votre contenu ici.</p>
+    <p>Ceci est une page d'accueil temporaire.</p>
+    <p>Des évolutions vont arriver prochainement</p>
   </div>
 </template>
 
 <script setup lang="ts">
-
-
-
-
-
 
 </script>
 

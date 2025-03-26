@@ -19,7 +19,7 @@ const fetchPlaylists = async () => {
   try {
     isLoading.value = true;
     playlists.value = await getUserPlaylists();
-    console.log('Playlists chargées:', playlists.value);
+    // console.log('Playlists chargées:', playlists.value);
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   } catch (err: any) {
     console.error('Erreur lors du chargement des playlists:', err);
@@ -37,9 +37,9 @@ const fetchPlaylists = async () => {
 const selectPlaylist = async (playlist: SpotifyPlaylist) => {
   selectedPlaylist.value = playlist;
   try {
-    console.log('Récupération des pistes pour la playlist:', playlist.name);
+    // console.log('Récupération des pistes pour la playlist:', playlist.name);
     tracks.value = await getPlaylistTracks(playlist.id);
-    console.log('Pistes récupérées:', tracks.value);
+    // console.log('Pistes récupérées:', tracks.value);
     clearQueue();
     for (const track of tracks.value) {
       addToQueue(track.track.uri);

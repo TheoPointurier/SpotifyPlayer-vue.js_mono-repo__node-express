@@ -63,9 +63,9 @@ export default defineComponent({
   emits: ['update-context'],
   setup(props, { emit }) {
     const handlePlayTrack = async (trackUri: string) => {
-      console.log('Attempting to play track:', trackUri);
-      console.log('isPlayerReady:', isPlayerReady.value);
-      console.log('Queue actuelle:', queue.value);
+      // console.log('Attempting to play track:', trackUri);
+      // console.log('isPlayerReady:', isPlayerReady.value);
+      // console.log('Queue actuelle:', queue.value);
 
       try {
         if (!isPlayerReady.value) {

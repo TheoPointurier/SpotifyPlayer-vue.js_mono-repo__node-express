@@ -20,7 +20,7 @@ async function navigateToHome() {
     await router.push('/');
 
   } catch (error) {
-    message.value = (error as Error).message;
+    message.value = 'Pas encore :(';
     console.error('Erreur lors de la navigation vers la page d’accueil:', error);
 
     setTimeout(() => {
@@ -35,10 +35,16 @@ async function navigateToHome() {
 
 <style scoped>
 .service-unavailable {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
   padding: 2rem;
   color: var(--spotify-white);
   background-color: var(--spotify-dark-grey);
+  justify-content: center;
+  height: 100vh;
 }
 
 button {
