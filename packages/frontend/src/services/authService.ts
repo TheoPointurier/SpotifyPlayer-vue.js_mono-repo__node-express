@@ -17,7 +17,7 @@ export const fetchToken = async (): Promise<string> => {
     if ((error as Error).message.includes('Non authentifié')) {
       const customError = error as Error & { value?: string };
       customError.value = 'Veuillez vous connecter';
-      window.location.href = '/login';
+      window.location.href = '/spotify-app/login';
     }
     console.error('Erreur lors de la récupération du token:', error);
     throw error;
