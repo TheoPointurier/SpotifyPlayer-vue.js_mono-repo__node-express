@@ -6,7 +6,7 @@
     <nav class="menu">
       <!-- <input type="text" placeholder="Rechercher une playlist" class="search-input" /> -->
       <ul class="menu-list">
-        <li v-if="isAuthenticated">
+        <li v-if="isAuthenticated" class="profile-text">
           <i class="fas fa-user"></i>
           <p v-if="profile" class="menu-text">Bonjour, {{ profile.display_name }}</p>
         </li>
@@ -226,5 +226,61 @@ a {
 
 a:hover {
   color: var(--spotify-green);
+}
+
+@media screen and (max-width: 768px) {
+  .side-menu {
+    position: initial;
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .side-menu:hover {
+    width: 100%;
+  }
+
+  img {
+    width: 2rem;
+    height: 2rem;
+    align-self: center;
+    margin: 0 0 0 0.5rem;
+  }
+
+  .menu-title {
+    display: none;
+  }
+
+  .menu {
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
+    align-items: center;
+  }
+
+  .menu-list {
+    flex-direction: row;
+    gap: 0;
+    width: 100%;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+
+  .menu-list-bottom {
+    justify-content: flex-end;
+    padding-right: 1rem;
+  }
+
+  li {
+    align-items: center;
+    margin: 0;
+  }
+
+  .profile-text {
+    display: none;
+  }
+
+  .side-menu:hover .menu-text {
+    display: none;
+  }
 }
 </style>

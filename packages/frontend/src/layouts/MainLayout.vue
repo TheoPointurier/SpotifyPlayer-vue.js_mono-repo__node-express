@@ -39,6 +39,7 @@ import { RouterView } from 'vue-router';
   align-content: center;
 }
 
+
 @media screen and (max-width: 1775px) {
   .main-layout {
     max-width: 100%;
@@ -53,5 +54,32 @@ import { RouterView } from 'vue-router';
     width: 95vw;
     justify-self: flex-end;
   }
+}
+
+@media screen and (max-width: 768px) {
+  .main-layout {
+    height: 100dvh;
+    width: 100dvw;
+    grid-template-rows: 80% 10% 10%;
+    grid-template-columns: 1fr;
+  }
+
+  .side-menu {
+    grid-row: 3 / 4;
+    grid-column: 1 / 2;
+    width: 100%;
+  }
+
+  .main-content {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
+    width: 100%;
+  }
+
+  .player {
+    grid-row: 2 / 3;
+    grid-column: 1 / 2;
+  }
+
 }
 </style>
