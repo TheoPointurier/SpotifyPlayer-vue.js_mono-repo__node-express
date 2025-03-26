@@ -21,7 +21,19 @@ export async function callback(
   req: Request<{}, {}, {}, { code: string }>,
   res: Response<{ error: string }>,
 ) {
+  const error = req.query.code as string;
   const code = req.query.code as string;
+
+  if (error) {
+    console.error('Erreur Spotify:', error);
+    return res.redirect('https://theopointurier.com/spotify-app/login');
+  }
+
+  if (!code) {
+    console.error('Code manquant dans le callback Spotify');
+    return res.redirect('https://theopointurier.com/spotify-app/login');
+  }
+
   try {
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
@@ -56,6 +68,7 @@ export async function callback(
       req.session.expiresIn = data.expires_in;
       req.session.expiresAt = Date.now() + data.expires_in * 1000;
     }
+    console.log('Session:', req.session);
 
     // res.cookie('access_token', data.access_token, {
     //   httpOnly: true,
@@ -73,6 +86,7 @@ export async function callback(
 
 export async function getToken(req: Request, res: Response<{ access_token: string } | { error: string }>) {
   console.log('getToken');
+  console.log('Session:', req.session);
   let accessToken = req.session?.accessToken;
   const expiresAt = req.session?.expiresAt;
 
