@@ -37,7 +37,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/spotify-app/'),
   routes,
 })
 
@@ -57,7 +57,11 @@ router.beforeEach(async (to, from, next) => {
       next();
     } catch (error) {
       console.error('Backend indisponible ou auth échouée:', error);
-      next('/service-unavailable');
+      if ((error as Error).message === 'Non authentifié. Veuillez vous reconnecter.') {
+        next('/login'); // Redirige vers /spotify-app/login grâce à createWebHistory
+      } else {
+        next('/service-unavailable');
+      }
     }
   } else {
     next(); // Routes sans requiresAuth (ex. '/')
