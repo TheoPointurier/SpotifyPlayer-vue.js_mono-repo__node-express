@@ -98,3 +98,33 @@ export const playTrack = async (trackUri: string, queue: string[]): Promise<void
     throw error;
   }
 };
+
+export const addTrackToPlaylist = async (playlistId: string, trackUri: string): Promise<void> => {
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'POST',
+        path: `/v1/playlists/${playlistId}/tracks`,
+        body: JSON.stringify({
+          uris: [trackUri],
+        }),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erreur lors de l'ajout à la playlist: ${response.status} - ${errorText}`);
+    }
+
+    console.log(`Piste ${trackUri} ajoutée à la playlist ${playlistId} avec succès:`);
+  } catch (error) {
+    console.error(`Erreur lors de l'ajout à la playlist`, error);
+      throw error
+  }
+}

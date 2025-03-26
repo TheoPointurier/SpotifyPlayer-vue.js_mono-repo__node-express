@@ -24,6 +24,10 @@
               <p class="track-name">{{ item.track.name }}</p>
               <p class="artist-name">{{ item.track.artists[0].name }}</p>
             </div>
+            <!-- <button class="add-to-playlist-button" @click.stop="handleAddToPlaylist(item.track.uri)"
+              title="Add to Playlist">
+              <i class="fas fa-plus"></i>
+            </button> -->
           </td>
           <td>{{ item.track.album.name }}</td>
           <td>{{ formatDuration(item.track.duration_ms) }}</td>
@@ -37,7 +41,7 @@
 import { defineComponent } from 'vue';
 import { isPlayerReady } from '../services/spotifyPlayerSetup';
 import { queue, addToQueue, setCurrentTrackUri } from '../services/playbackState';
-import { playTrack } from '../services/spotifyService';
+import { playTrack, addTrackToPlaylist } from '../services/spotifyService';
 import { ensureDeviceActive } from '../services/spotifyPlayerService';
 
 export default defineComponent({
@@ -95,7 +99,6 @@ export default defineComponent({
       }
     };
 
-    // Fonction pour formater la durée en MM:SS
     const formatDuration = (durationMs: number): string => {
       const totalSeconds = Math.floor(durationMs / 1000);
       const minutes = Math.floor(totalSeconds / 60);
@@ -106,9 +109,21 @@ export default defineComponent({
       return `${formattedMinutes}:${formattedSeconds}`;
     };
 
+    const handleAddToPlaylist = async (trackUri: string) => {
+      try {
+        const playlistId = 'ID_DE_TA_PLAYLIST'; // TO replace with good logic
+        await addTrackToPlaylist(playlistId, trackUri);
+        alert('Piste ajoutée à la playlist !');
+      } catch (error) {
+        console.error('Erreur lors de l’ajout à la playlist:', error);
+        alert('Erreur lors de l’ajout à la playlist.');
+      }
+    };
+
     return {
       formatDuration,
       handlePlayTrack,
+      handleAddToPlaylist,
     };
   },
 });
@@ -142,6 +157,19 @@ export default defineComponent({
   &:not(:hover)::-webkit-scrollbar-thumb {
     background-color: transparent;
   }
+}
+
+.add-to-playlist-button {
+  background: none;
+  border: none;
+  color: var(--spotify-white);
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.add-to-playlist-button:hover {
+  color: var(--spotify-green);
 }
 
 .track-table {
