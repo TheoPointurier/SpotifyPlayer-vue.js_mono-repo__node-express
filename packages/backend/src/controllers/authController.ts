@@ -95,7 +95,7 @@ export async function callback(
       console.log('En-têtes envoyés dans /auth/callback:', res.getHeaders())
     })
 
-    // res.redirect(FRONTEND_URL)
+    res.redirect(FRONTEND_URL)
     // res.json({ access_token: data.access_token, refresh_token: data.refresh_token });
   } catch (error) {
     console.error(error)
