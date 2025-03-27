@@ -68,7 +68,6 @@ export async function callback(
       req.session.expiresIn = data.expires_in;
       req.session.expiresAt = Date.now() + data.expires_in * 1000;
     // }
-    console.log('Session:', req.session);
     console.log('Session après stockage dans /auth/callback:', req.session);
 
     // res.cookie('access_token', data.access_token, {
@@ -116,11 +115,11 @@ export async function getToken(req: Request, res: Response<{ access_token: strin
       if (!response.ok) throw new Error('Erreur lors du rafraîchissement du token');
       const data = await response.json();
 
-      if (req.session) {
+      
         req.session.accessToken = data.access_token;
         req.session.expiresIn = data.expires_in;
         req.session.expiresAt = Date.now() + data.expires_in * 1000;
-      }
+      
 
       accessToken = data.access_token;
     } catch (error) {
