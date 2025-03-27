@@ -72,19 +72,19 @@ export async function callback(
     // }
     console.log('Session après stockage dans /auth/callback:', req.session);
 
-    // res.cookie('access_token', data.access_token, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === 'production',
-    //   sameSite: 'strict',
-    //   maxAge: data.expires_in * 1000,
-    // });
+    res.cookie('access_token', data.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: data.expires_in * 1000,
+    });
 
     res.on('finish', () => {
       console.log('En-têtes envoyés dans /auth/callback:', res.getHeaders());
     });
 
-    // res.redirect(FRONTEND_URL);
-    res.json({ access_token: data.access_token, refresh_token: data.refresh_token });
+    res.redirect(FRONTEND_URL);
+    // res.json({ access_token: data.access_token, refresh_token: data.refresh_token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de l’authentification' });
