@@ -114,14 +114,16 @@ export async function getToken(req: Request, res: Response<{ access_token: strin
 
   // Vérifier si le token est présent
   if (!accessToken) {
-    return res.status(401).json({ error: 'Non Authentifié' });
+    res.status(401).json({ error: 'Non Authentifié' });
+    return;
   }
 
   // Vérifier si le token est expiré (si tu veux garder cette logique)
   if (expiresAt && Date.now() > expiresAt) {
     const refreshToken = req.session?.refreshToken;
     if (!refreshToken) {
-      return res.status(401).json({ error: 'Non Authentifié' });
+      res.status(401).json({ error: 'Non Authentifié' });
+      return; 
     }
 
     // Rafraîchir le token
@@ -138,7 +140,9 @@ export async function getToken(req: Request, res: Response<{ access_token: strin
         }).toString(),
       });
 
-      if (!response.ok) throw new Error('Erreur lors du rafraîchissement du token');
+      if (!response.ok) {
+        throw new Error('Erreur lors du rafraîchissement du token');
+      }
       const data = await response.json();
 
       // Met à jour la session
@@ -157,7 +161,8 @@ export async function getToken(req: Request, res: Response<{ access_token: strin
       accessToken = data.access_token;
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error: 'Erreur lors du rafraîchissement du token' });
+      res.status(500).json({ error: 'Erreur lors du rafraîchissement du token' });
+      return; 
     }
   }
 
