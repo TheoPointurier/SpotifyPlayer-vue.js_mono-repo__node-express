@@ -28,7 +28,7 @@ export const logout = async (): Promise<void> => {
     if (!response.ok) {
       throw new Error('Erreur lors de la déconnexion');
     }
-    window.location.href = '/login';
+    window.location.href = '/spotify-app/login';
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
     throw error;
