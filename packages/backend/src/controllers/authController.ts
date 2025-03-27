@@ -20,7 +20,7 @@ export async function callback(
   req: Request< { code: string }>,
   res: Response<{ error: string }>,
 ) {
-  const error = req.query.code as string;
+  const error = req.query.error as string;
   const code = req.query.code as string;
 
   if (error) {
