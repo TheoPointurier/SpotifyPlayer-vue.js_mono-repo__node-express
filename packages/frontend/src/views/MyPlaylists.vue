@@ -25,7 +25,7 @@ const fetchPlaylists = async () => {
     console.error('Erreur lors du chargement des playlists:', err);
     if (err.message.includes('Non authentifié')) {
       error.value = 'Veuillez vous connecter pour voir vos playlists.';
-      window.location.href = '/login';
+      // window.location.href = '/login';
     } else {
       error.value = 'Erreur lors du chargement des playlists.';
     }

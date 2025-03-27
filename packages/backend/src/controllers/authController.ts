@@ -37,12 +37,12 @@ export async function callback(
 
   if (error) {
     console.log('Erreur Spotify:', error)
-    return res.redirect('https://theopointurier.com/spotify-app/login')
+    // return res.redirect('https://theopointurier.com/spotify-app/login')
   }
 
   if (!code) {
     console.error('Code manquant dans le callback Spotify')
-    return res.redirect('https://theopointurier.com/spotify-app/login')
+    // return res.redirect('https://theopointurier.com/spotify-app/login')
   }
 
   try {

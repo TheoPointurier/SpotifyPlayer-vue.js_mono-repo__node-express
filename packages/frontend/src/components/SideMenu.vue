@@ -91,7 +91,7 @@ const fetchProfile = async () => {
   } catch (error) {
     console.error('Erreur lors de la récupération du profil:', error);
     if ((error as Error).message.includes('Non authentifié')) {
-      window.location.href = '/login';
+      // window.location.href = '/login';
     }
   }
 };

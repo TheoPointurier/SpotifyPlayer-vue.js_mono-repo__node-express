@@ -105,7 +105,7 @@ export default defineComponent({
       } catch (error) {
         console.error('Erreur lors de l’initialisation du Spotify SDK:', error);
         if ((error as Error).message.includes('Utilisateur non authentifié')) {
-          window.location.href = '/login';
+          // window.location.href = '/login';
         }
       }
     });
