@@ -17,8 +17,7 @@ export function login(
 };
 
 export async function callback(
-  // biome-ignore lint/complexity/noBannedTypes: <explanation>
-  req: Request<{}, {}, {}, { code: string }>,
+  req: Request< { code: string }>,
   res: Response<{ error: string }>,
 ) {
   const error = req.query.code as string;
@@ -50,7 +49,8 @@ export async function callback(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Erreur lors de la récupération du token: ${response.status} - ${errorText}`);
+      console.log(`Erreur lors de la récupération du token: ${response.status} - ${errorText}`);
+      console.log('Session après stockage dans /auth/callback:', req.session);
     }
 
     const data = await response.json();
@@ -69,6 +69,7 @@ export async function callback(
       req.session.expiresAt = Date.now() + data.expires_in * 1000;
     // }
     console.log('Session:', req.session);
+    console.log('Session après stockage dans /auth/callback:', req.session);
 
     // res.cookie('access_token', data.access_token, {
     //   httpOnly: true,
