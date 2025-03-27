@@ -103,21 +103,25 @@ export async function callback(
   }
 }
 
-export async function getToken(
-  req: Request,
-  res: Response<{ access_token: string } | { error: string }>,
-) {
-  console.log('getToken')
-  console.log('Session:', req.session)
-  let accessToken = req.session?.accessToken || req.cookies.access_token
-  const expiresAt = req.session?.expiresAt
+export async function getToken(req: Request, res: Response<{ access_token: string } | { error: string }>) {
+  console.log('getToken');
+  console.log('Cookies:', req.cookies); // Vérifie si le cookie est bien envoyé
+  console.log('Session:', req.session);
 
-  // Vérifier si le token est expiré
-  if (!accessToken || !expiresAt || Date.now() > expiresAt) {
-    const refreshToken = req.session?.refreshToken
+  // Essaie de lire l'access_token depuis le cookie ou la session
+  let accessToken = req.cookies?.access_token || req.session?.accessToken;
+  const expiresAt = req.session?.expiresAt;
+
+  // Vérifier si le token est présent
+  if (!accessToken) {
+    return res.status(401).json({ error: 'Non Authentifié' });
+  }
+
+  // Vérifier si le token est expiré (si tu veux garder cette logique)
+  if (expiresAt && Date.now() > expiresAt) {
+    const refreshToken = req.session?.refreshToken;
     if (!refreshToken) {
-      res.status(401).json({ error: 'Non Authentifié' })
-      return
+      return res.status(401).json({ error: 'Non Authentifié' });
     }
 
     // Rafraîchir le token
@@ -132,34 +136,32 @@ export async function getToken(
           grant_type: 'refresh_token',
           refresh_token: refreshToken,
         }).toString(),
-      })
+      });
 
-      if (!response.ok)
-        throw new Error('Erreur lors du rafraîchissement du token')
-      const data = await response.json()
+      if (!response.ok) throw new Error('Erreur lors du rafraîchissement du token');
+      const data = await response.json();
 
-      req.session.accessToken = data.access_token
-      req.session.expiresIn = data.expires_in
-      req.session.expiresAt = Date.now() + data.expires_in * 1000
+      // Met à jour la session
+      req.session.accessToken = data.access_token;
+      req.session.expiresIn = data.expires_in;
+      req.session.expiresAt = Date.now() + data.expires_in * 1000;
 
+      // Met à jour le cookie
       res.cookie('access_token', data.access_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: data.expires_in * 1000,
-      })
+      });
 
-      accessToken = data.access_token
+      accessToken = data.access_token;
     } catch (error) {
-      console.error(error)
-      res
-        .status(500)
-        .json({ error: 'Erreur lors du rafraîchissement du token' })
-      return
+      console.error(error);
+      return res.status(500).json({ error: 'Erreur lors du rafraîchissement du token' });
     }
   }
 
-  res.json({ access_token: accessToken || '' })
+  res.json({ access_token: accessToken });
 }
 
 export async function refresh(

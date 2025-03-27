@@ -28,7 +28,7 @@ export async function getCurrentTrack(req: Request, res: Response) {
 }
 
 export async function proxySpotifyRequest(req: Request, res: Response) {
-  let accessToken = req.session?.accessToken;
+  let accessToken = req.cookies?.accessToken || req.session?.accessToken;
   const expiresAt = req.session?.expiresAt;
   const refreshToken = req.session?.refreshToken;
 
