@@ -3,6 +3,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 export const fetchToken = async (): Promise<string> => {
   try {
     const response = await fetch(`${BASE_URL}/auth/get-token`, {
+      method: 'GET',
       credentials: 'include',
     });
     if (!response.ok) {

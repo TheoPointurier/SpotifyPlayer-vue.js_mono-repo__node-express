@@ -15,8 +15,6 @@ const PORT = process.env.PORT || 5000;
 const corsOptions = {
   origin: ['https://theopointurier.com','https://theopointurier.com/spotify-app'],
   credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 app.use(express.json());
@@ -34,6 +32,7 @@ app.use(
     },
   }),
 );
+console.log('Configuration de express-session:', app.get('session'));
 app.use(cors(corsOptions));
 
 // Routes
