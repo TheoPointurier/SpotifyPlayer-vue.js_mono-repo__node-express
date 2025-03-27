@@ -218,7 +218,7 @@ export const ensureDeviceActive = async (): Promise<boolean> => {
 
     if (transferResponse.status === 401) {
       console.error('Utilisateur non authentifié. Redirection vers la connexion...');
-      window.location.href = '/login';
+      // window.location.href = '/login';
       return false;
     }
 
