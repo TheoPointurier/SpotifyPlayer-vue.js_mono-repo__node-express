@@ -23,6 +23,8 @@ export async function callback(
   const error = req.query.error as string;
   const code = req.query.code as string;
 
+  console.log('Paramètres de la requête /auth/callback:', req.query);
+
   if (error) {
     console.log('Erreur Spotify:', error);
     return res.redirect('https://theopointurier.com/spotify-app/login');
@@ -76,6 +78,10 @@ export async function callback(
     //   sameSite: 'strict',
     //   maxAge: data.expires_in * 1000,
     // });
+
+    res.on('finish', () => {
+      console.log('En-têtes envoyés dans /auth/callback:', res.getHeaders());
+    });
 
     res.redirect(FRONTEND_URL);
   } catch (error) {
