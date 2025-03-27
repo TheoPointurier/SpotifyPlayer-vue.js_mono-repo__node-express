@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: ['https://theopointurier.com','https://theopointurier.com/spotify-app'],
+  origin: ['https://theopointurier.com'],
   credentials: true,
 };
 
