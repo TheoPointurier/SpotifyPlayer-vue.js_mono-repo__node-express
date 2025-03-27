@@ -24,7 +24,7 @@ export async function callback(
   const code = req.query.code as string;
 
   if (error) {
-    console.error('Erreur Spotify:', error);
+    console.log('Erreur Spotify:', error);
     return res.redirect('https://theopointurier.com/spotify-app/login');
   }
 
