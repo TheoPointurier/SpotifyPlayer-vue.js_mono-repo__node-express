@@ -13,12 +13,12 @@ const routes = [
     children: [
       { path: '', 
         component: HomePage,
-        meta: { requiresAuth: true },
+        // meta: { requiresAuth: true },
        },
       {
         path: 'my-playlists',
         component: MyPlaylists,
-        meta: { requiresAuth: true },
+        // meta: { requiresAuth: true },
       },
     ],
   },
@@ -41,31 +41,31 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach(async (to, from, next) => {
-  // Routes publiques qui ne nécessitent pas de vérification
-  const publicRoutes = ['/login', '/service-unavailable'];
+// router.beforeEach(async (to, from, next) => {
+//   // Routes publiques qui ne nécessitent pas de vérification
+//   const publicRoutes = ['/login', '/service-unavailable'];
 
-  if (publicRoutes.includes(to.path)) {
-    next(); // Passe directement pour ces routes
-    return;
-  }
+//   if (publicRoutes.includes(to.path)) {
+//     next(); // Passe directement pour ces routes
+//     return;
+//   }
 
-  // Vérifie les routes nécessitant une authentification ou le backend
-  if (to.meta.requiresAuth) {
-    try {
-      await fetchToken(); // Vérifie si le backend est disponible et l’auth valide
-      next();
-    } catch (error) {
-      console.error('Backend indisponible ou auth échouée:', error);
-      if ((error as Error).message === 'Non authentifié. Veuillez vous reconnecter.') {
-        next('/login'); // Redirige vers /spotify-app/login grâce à createWebHistory
-      } else {
-        next('/service-unavailable');
-      }
-    }
-  } else {
-    next(); // Routes sans requiresAuth (ex. '/')
-  }
-});
+//   // Vérifie les routes nécessitant une authentification ou le backend
+//   if (to.meta.requiresAuth) {
+//     try {
+//       await fetchToken(); // Vérifie si le backend est disponible et l’auth valide
+//       next();
+//     } catch (error) {
+//       console.error('Backend indisponible ou auth échouée:', error);
+//       if ((error as Error).message === 'Non authentifié. Veuillez vous reconnecter.') {
+//         next('/login'); // Redirige vers /spotify-app/login grâce à createWebHistory
+//       } else {
+//         next('/service-unavailable');
+//       }
+//     }
+//   } else {
+//     next(); // Routes sans requiresAuth (ex. '/')
+//   }
+// });
 
 export default router
