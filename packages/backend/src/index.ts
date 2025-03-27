@@ -7,18 +7,22 @@ import session from 'express-session';
 import  spotifyRouter  from './routes/spotifyRoutes.js';
 import  authRouter  from './routes/authRoutes.js';
 
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: ['https://theopointurier.com'],
+  origin: 'https://theopointurier.com',
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'], 
 };
+app.use(cors(corsOptions));
+app.options('*', cors());
 
 app.use(express.json());
-app.use(cookieParser());
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'ton_secret_pour_les_sessions',
@@ -33,7 +37,7 @@ app.use(
   }),
 );
 console.log('Configuration de express-session:', app.get('session'));
-app.use(cors(corsOptions));
+app.use(cookieParser());
 
 // Routes
 app.use('/api', spotifyRouter);
