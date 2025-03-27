@@ -5,7 +5,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'https://theopointurier.com/spo
 
 export function login(
   req: Request,
-  res: Response<{ error: string }>,
+  res: Response<{ error: string } | { access_token: string; refresh_token: string }>,
 ) {
   if (req.session?.accessToken) {
     return res.redirect(FRONTEND_URL);
@@ -18,7 +18,7 @@ export function login(
 
 export async function callback(
   req: Request< { code: string }>,
-  res: Response<{ error: string }>,
+  res: Response<{ error: string } | { access_token: string; refresh_token: string }>,
 ) {
   const error = req.query.error as string;
   const code = req.query.code as string;
@@ -83,7 +83,8 @@ export async function callback(
       console.log('En-têtes envoyés dans /auth/callback:', res.getHeaders());
     });
 
-    res.redirect(FRONTEND_URL);
+    // res.redirect(FRONTEND_URL);
+    res.json({ access_token: data.access_token, refresh_token: data.refresh_token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de l’authentification' });
