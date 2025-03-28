@@ -19,10 +19,10 @@ const routes = [
     path: '/login',
     component: Login
   },
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/',
-  }
+  // {
+  //   path: '/:pathMatch(.*)*',
+  //   redirect: '/',
+  // }
 ];
 
 const router = createRouter({
