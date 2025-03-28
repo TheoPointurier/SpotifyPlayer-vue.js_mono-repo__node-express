@@ -9,13 +9,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getTheOnePlaylist } from '../services/spotifyService.ts';
-
 const message = ref("");
 
 
+
 </script>
-<script>
+<script lang="ts">
+import { getTheOnePlaylist } from '../services/spotifyService.ts';
 async function logPlaylist() {
   const playlist = await getTheOnePlaylist();
   console.log(playlist);
