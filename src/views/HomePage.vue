@@ -17,7 +17,7 @@ const message = ref("");
 <script lang="ts">
 import { getTheOnePlaylist } from '../services/spotifyService.ts';
 async function logPlaylist() {
-  const playlist = await getTheOnePlaylist();
+  const playlist = await getTheOnePlaylist('35x9ZgrBLJI6ZQAkO17fFh');
   console.log(playlist);
 }
 </script>

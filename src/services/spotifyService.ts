@@ -5,35 +5,16 @@ export const login = () => {
   window.location.href = `${BASE_URL}/auth/login`;
 };
 
-export const getTheOnePlaylist = async (): Promise<SpotifyPlaylist> => {
-  try {
-    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
-      method: 'POST',
-      headers: {
-        contentType: 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        method: 'GET',
-        path: '/v1/playlists/35x9ZgrBLJI6ZQAkO17fFh',
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Non authentifié. Veuillez vous reconnecter.');
-      }
-      const errorText = await response.text();
-      throw new Error(`Erreur lors de la récupération de the playlist: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.log('erreur lors de la récupération de the playlist', error);
-    throw error;
+export async function getTheOnePlaylist(playlistId: string) {
+  const response = await fetch(`/api/spotify/public-playlist/${playlistId}`);
+  
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Erreur récupération playlist : ${response.status} – ${errText}`);
   }
-};
+  
+  return response.json();
+}
 
 export const getUserPlaylists = async (): Promise<SpotifyPlaylist[]> => {
   try {
