@@ -13,6 +13,9 @@ import { getTheOnePlaylist } from '../services/spotifyService.ts';
 
 const message = ref("");
 
+
+</script>
+<script>
 async function logPlaylist() {
   const playlist = await getTheOnePlaylist();
   console.log(playlist);
