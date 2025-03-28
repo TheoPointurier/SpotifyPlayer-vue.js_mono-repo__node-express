@@ -12,8 +12,10 @@ export async function getTheOnePlaylist(playlistId: string) {
     const errText = await response.text();
     throw new Error(`Erreur récupération playlist : ${response.status} – ${errText}`);
   }
+  const result = await response.json();
+  console.log(result);
   
-  return response.json();
+  return result;
 }
 
 export const getUserPlaylists = async (): Promise<SpotifyPlaylist[]> => {
