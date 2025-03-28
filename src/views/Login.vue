@@ -13,7 +13,7 @@ const password = ref('')
 <template>
   <div class="login-page">
     <div class="login-page__container">
-      <img src="../assets/spotify-logo.png" alt="Spotify logo" class="login-page__img" />
+      <img src="/spotify-logo.png" alt="Spotify logo" class="login-page__img" />
       <h1 class="login-page__title">Connexion à votre compte Spotify</h1>
       <p class="login-page__text">Pour accéder à ce service vous devez disposer d'un compte premium Spotify</p>
       <button @click="login" class="login-page__button">Login</button>
