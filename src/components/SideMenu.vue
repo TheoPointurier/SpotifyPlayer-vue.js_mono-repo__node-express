@@ -2,7 +2,7 @@
 <template>
   <div class="side-menu">
     <RouterLink to="/">
-      <img src="../assets/spotify-logo.png" alt="Spotify logo" class="logo" />
+      <img src="/spotify-logo.png" alt="Spotify logo" class="logo" />
     </RouterLink>
     <h1 class="menu-title">Spotify Player</h1>
     <!-- Bouton burger visible uniquement en mobile -->
