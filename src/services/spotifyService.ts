@@ -5,6 +5,36 @@ export const login = () => {
   window.location.href = `${BASE_URL}/auth/login`;
 };
 
+export const getTheOnePlaylist = async (): Promise<SpotifyPlaylist> => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
+      method: 'POST',
+      headers: {
+        contentType: 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        method: 'GET',
+        path: '/v1/playlists/35x9ZgrBLJI6ZQAkO17fFh',
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Non authentifié. Veuillez vous reconnecter.');
+      }
+      const errorText = await response.text();
+      throw new Error(`Erreur lors de la récupération de the playlist: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log('erreur lors de la récupération de the playlist', error);
+    throw error;
+  }
+};
+
 export const getUserPlaylists = async (): Promise<SpotifyPlaylist[]> => {
   try {
     const response = await fetch(`${BASE_URL}/api/spotify/proxy`, {
@@ -23,11 +53,11 @@ export const getUserPlaylists = async (): Promise<SpotifyPlaylist[]> => {
       if (response.status === 401) {
         throw new Error('Non authentifié. Veuillez vous reconnecter.');
       }
-      if (response.status === 403 && (await response.text()).includes('the user may not be registered')){
+      const errorText = await response.text();
+      if (response.status === 403 && errorText.includes('the user may not be registered')){
         alert(`L'utilisateur n'est pas enregistré, veuillez contacter le créateur de l'application pour qu'il vous ajoute à la liste des utilisateurs autorisés.`);
         throw new Error('L\'utilisateur n\'est pas enregistré');
       }
-      const errorText = await response.text();
       throw new Error(`Erreur lors de la récupération des playlists: ${response.status} - ${errorText}`);
     }
 
