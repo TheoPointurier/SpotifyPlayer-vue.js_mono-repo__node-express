@@ -3,17 +3,20 @@
   <div class="home-page">
     <h1>Bienvenue sur Spotify Player</h1>
     <p>Ceci est une page d'accueil temporaire. Ajoutez votre contenu ici.</p>
+    <button @click="logPlaylist">Afficher la playlist</button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { getTheOnePlaylist } from '../services/spotifyService.ts';
 
-const playlist = await getTheOnePlaylist();
-console.log(playlist);
+const message = ref("");
 
-
-
+async function logPlaylist() {
+  const playlist = await getTheOnePlaylist();
+  console.log(playlist);
+}
 </script>
 
 <style scoped>
