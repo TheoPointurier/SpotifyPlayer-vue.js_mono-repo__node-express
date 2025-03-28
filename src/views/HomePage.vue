@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { getTheOnePlaylist } from '@/services/spotifyService.ts';
+import { getTheOnePlaylist } from '../services/spotifyService.ts';
 
 const playlist = await getTheOnePlaylist();
 console.log(playlist);
