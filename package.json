@@ -1,20 +1,24 @@
 {
-  "name": "spotify_mono-repo",
-  "version": "1.0.0",
-  "description": "",
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev:backend": "pnpm --filter backend dev",
-    "dev:frontend": "pnpm --filter frontend dev",
-    "dev": "pnpm run dev:backend & pnpm run dev:frontend",
-    "build": "pnpm -r build",
-    "lint": "biome lint .",
-    "format": "biome format . --write",
-    "check": "biome check . --write"
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "4"
+  },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4"
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "^22.13.11",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0",
+    "vue-tsc": "^2.2.4"
   }
 }
