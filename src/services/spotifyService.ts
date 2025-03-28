@@ -24,7 +24,7 @@ export const getUserPlaylists = async (): Promise<SpotifyPlaylist[]> => {
         throw new Error('Non authentifié. Veuillez vous reconnecter.');
       }
       if (response.status === 403 && (await response.text()).includes('the user may not be registered')){
-        alert('L\'utilisateur n\'est pas enregistré');
+        alert(`L'utilisateur n'est pas enregistré, veuillez contacter le créateur de l'application`);
         throw new Error('L\'utilisateur n\'est pas enregistré');
       }
       const errorText = await response.text();
